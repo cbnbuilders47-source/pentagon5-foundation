@@ -1,7 +1,10 @@
-# Milestone 1 default ownership. Verify that this team exists before enabling
+# Foundation ownership. Verify that this team exists before enabling
 # required CODEOWNERS review in branch protection.
 * @pentagon5-foundation/maintainers
 
 /.github/ @pentagon5-foundation/maintainers
 /docs/security/ @pentagon5-foundation/maintainers
 /.pre-commit-config.yaml @pentagon5-foundation/maintainers
+/infrastructure/database/ @pentagon5-foundation/maintainers
+/packages/event-contracts/ @pentagon5-foundation/maintainers
+/packages/shared-types/ @pentagon5-foundation/maintainers

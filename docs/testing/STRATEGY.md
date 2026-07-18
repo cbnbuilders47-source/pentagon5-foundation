@@ -30,13 +30,17 @@ not use `continue-on-error` or equivalent suppression.
 - `.github/workflows/security.yml` checks secrets, vulnerabilities, dependency
   changes, manifests, and SBOM generation.
 - `docs/operations/MILESTONE_1.md` is the execution evidence record.
+- `docs/operations/MILESTONE_2.md` records contract and database evidence.
 
 ## Commands
 
-Current local check:
+Current local checks:
 
 ```sh
-pre-commit run --all-files --show-diff-on-failure
+make contracts-check
+make database-test
+make verify
+make acceptance
 ```
 
 Compose dependency gate:
@@ -62,6 +66,16 @@ dependencies, source, and assertions.
 6. Compose: validate the existing definition, start its dependencies, and
    inspect every declared container health check.
 7. Security: Gitleaks, Trivy, OSV-Scanner, dependency review, and SPDX SBOM.
+
+### Milestone 2
+
+1. JSON Schema draft and reference validation.
+2. Valid, invalid, serialization, compatibility, and event-envelope fixtures.
+3. Empty-database migration upgrade, downgrade, and repeat upgrade.
+4. Foreign-key, uniqueness, state-transition, append-only, and numeric
+   precision constraints.
+5. UTC timestamp normalization and development-seed idempotence.
+6. Repository ownership, security scans, and Docker restart recovery.
 
 ### Future Python 3.12+ FastAPI server
 
@@ -94,6 +108,9 @@ dependencies, source, and assertions.
 - Foundation contract tests: PASS, four tests.
 - Server, desktop, end-to-end, and packaging tests: NOT APPLICABLE to
   Milestone 1; their source and artifacts are not authorized.
+- Milestone 2 contract tests: PASS, 20 tests.
+- Milestone 2 migration and database tests: PASS, 9 tests.
+- Milestone 2 complete local acceptance and restart recovery: PASS.
 
 ## Known issues
 
@@ -121,6 +138,7 @@ retained briefly as a CI artifact and must identify the tested revision.
 - Runtime tests are deferred rather than simulated.
 - Future server independence has a named acceptance test.
 - No backend, frontend, Rust, app, or DMG test job exists before source.
+- Contract and database tests execute without creating a service runtime.
 - Commands and results are traceable to a revision when execution occurs.
 
 Milestone 1 acceptance cannot be used to waive the Milestone 2 authorization
@@ -128,7 +146,6 @@ gate.
 
 ## Next milestone
 
-Once authorized, define API contracts and add the smallest executable test for
-each new source boundary. Require a FastAPI health test and an independent
-server lifecycle test before connecting Vite/Tauri. Establish coverage,
-platform, performance, and test-data policies before broad implementation.
+Milestone 3 remains unauthorized. Future service or desktop tests require a
+separate scope decision and must preserve independent server lifecycle
+validation.

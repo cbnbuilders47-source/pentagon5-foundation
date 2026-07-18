@@ -2,13 +2,13 @@
 
 ## Objectives
 
-Record the Milestone 1 repository contract and a non-binding future layout
-without creating premature source boundaries. The repository begins as a clean
-foundation: no previous code was copied, adapted, imported, or reused.
+Record the accepted Milestone 1 baseline and the authorized Milestone 2
+contract/database layout without creating application source boundaries.
 
 ## Current layout
 
-Milestone 1 owns the complete 58-file foundation contract:
+Milestone 1 established a 58-file baseline. Milestone 2 adds only versioned
+contract, migration, fixture, test, decision, and evidence artifacts:
 
 ```text
 .
@@ -20,20 +20,20 @@ Milestone 1 owns the complete 58-file foundation contract:
 │       └── security.yml
 ├── root governance, tool, and environment-example files
 ├── docker-compose.yml
-├── apps/, services/, and packages/ ownership boundaries
-├── infrastructure/ dependency, monitoring, and deployment foundations
-├── tests/ ownership placeholders
+├── apps/ and services/ documentation-only ownership boundaries
+├── packages/ versioned shared contract schemas and fixtures
+├── infrastructure/ migrations, dependencies, monitoring, and deployment
+├── tests/ executable contract and database checks
 └── docs/ architecture, API, deployment, operations, security, and testing
 ```
 
-This shape is intentionally foundation-only. Root policy, placeholder
-boundaries, local dependency infrastructure, health scripts, monitoring
-configuration, and test placeholders are all approved Milestone 1 work.
+The exact current file set remains fail-closed in the repository-contract CI
+job. No service or application process is introduced.
 
 ## Future layout
 
-After a separate Milestone 2 authorization, a proposal may introduce clearly
-owned areas such as:
+After a separate future authorization, a proposal may introduce clearly owned
+application areas such as:
 
 ```text
 apps/
@@ -41,11 +41,11 @@ apps/
 services/
   api/           # Future Python 3.12+ FastAPI server
 packages/
-  contracts/     # Generated or language-neutral API contracts
+  shared-types/  # Existing language-neutral Milestone 2 contracts
 ```
 
-The proposal is not permission to create those paths. Their exact names,
-workspace tooling, packaging, and ownership require review at the gate.
+The proposal is not permission to create application source. Workspace tooling,
+packaging, and service ownership require a later gate.
 
 ## Files
 
@@ -60,6 +60,10 @@ workspace tooling, packaging, and ownership require review at the gate.
 - `docker-compose.yml` and `infrastructure/` define the six local dependencies,
   health tooling, observability configuration, and ownership boundaries.
 - Boundary READMEs assign future ownership without introducing runtime source.
+- `packages/shared-types/` and `packages/event-contracts/` own immutable v1
+  schemas; `packages/test-fixtures/` owns synthetic compatibility fixtures.
+- `infrastructure/database/` owns current metadata, migrations, and
+  development-only seeds.
 - `docs/` contains the architecture, security, deployment, testing, and
   operations records required by the Milestone 1 gate.
 
@@ -87,7 +91,7 @@ commands only within this repository when reviewing the change.
 
 ## Results
 
-- Repository shape validation: PASS; the exact 58-file contract has no extras.
+- Repository shape validation: PASS; the exact 83-file contract has no extras.
 - Pre-commit validation: PASS.
 - Local equivalent of GitHub-hosted CI: PASS; hosted execution is pending.
 - Application build/test: NOT APPLICABLE to Milestone 1; no application source
@@ -115,18 +119,18 @@ never be committed.
 
 ## Acceptance
 
-- All 58 authorized Milestone 1 files exist with no extras.
+- The accepted Milestone 1 baseline remains present.
+- Every Milestone 2 file is enumerated by the fail-closed repository contract.
 - Current and future layouts are clearly distinguished.
 - No backend, frontend, Rust, app, or DMG build job exists before source.
 - Static and security workflows have explicit timeouts and minimal permissions.
 - Results do not claim execution that did not occur.
 
-Passing these checks closes only the documentation-and-controls gate. It does
-not authorize source creation.
+Passing these checks closes only the shared-contract and database-foundation
+gate. It does not authorize application source.
 
 ## Next milestone
 
-An authorized Milestone 2 design must decide workspace layout, dependency
-managers, lockfile policy, API contract ownership, and the independent server
-deployment model before source paths are created. Vite/Tauri and FastAPI jobs
-may be added only with the corresponding source and executable tests.
+Milestone 3 remains unauthorized. Vite/Tauri, FastAPI, authentication, broker,
+market-feed, strategy, and order-placement jobs may be added only after a
+separate gate with corresponding source and executable tests.

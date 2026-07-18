@@ -1,0 +1,66 @@
+[
+  {
+    "schemaVersion": "1.0.0",
+    "messageId": "018f22e2-7d00-7000-8000-000000000101",
+    "category": "command",
+    "occurredAt": "2026-07-18T12:10:00Z",
+    "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+    "payload": {"commandType": "place_order", "clientOrderId": "018f22e2-7d00-7000-8000-000000000102", "instrumentId": "018f22e2-7d00-7000-8000-000000000013", "side": "buy", "orderType": "limit", "quantity": "10", "limitPrice": "189.1", "idempotencyKey": "client-order-20260718-001"}
+  },
+  {
+    "schemaVersion": "1.0.0",
+    "messageId": "018f22e2-7d00-7000-8000-000000000103",
+    "category": "query",
+    "occurredAt": "2026-07-18T12:10:01Z",
+    "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+    "payload": {"queryType": "list", "entityType": "Order", "page": {"limit": 50}}
+  },
+  {
+    "schemaVersion": "1.0.0",
+    "messageId": "018f22e2-7d00-7000-8000-000000000104",
+    "category": "response",
+    "occurredAt": "2026-07-18T12:10:02Z",
+    "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100", "causationId": "018f22e2-7d00-7000-8000-000000000103"},
+    "payload": {"status": "ok", "items": [{"schemaVersion": "1.0.0", "id": "018f22e2-7d00-7000-8000-000000000001", "email": "trader@example.com", "status": "active"}], "pageInfo": {"hasNextPage": false}, "idempotency": {"idempotencyKey": "client-order-20260718-001", "replayed": false}}
+  },
+  {
+    "schemaVersion": "1.0.0",
+    "messageId": "018f22e2-7d00-7000-8000-000000000105",
+    "category": "error",
+    "occurredAt": "2026-07-18T12:10:03Z",
+    "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+    "payload": {"code": "ORDER_REJECTED", "message": "Risk limit exceeded", "retryable": false}
+  },
+  {
+    "schemaVersion": "1.0.0",
+    "messageId": "018f22e2-7d00-7000-8000-000000000106",
+    "category": "domain_event",
+    "occurredAt": "2026-07-18T12:10:04Z",
+    "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100", "causationId": "018f22e2-7d00-7000-8000-000000000101"},
+    "payload": {"eventType": "order.accepted", "aggregateType": "Order", "aggregateId": "018f22e2-7d00-7000-8000-000000000016", "sequence": 1, "entity": {"schemaVersion": "1.0.0", "id": "018f22e2-7d00-7000-8000-000000000016", "instrumentId": "018f22e2-7d00-7000-8000-000000000013", "side": "buy", "orderType": "limit", "quantity": "10", "limitPrice": "189.1", "status": "accepted", "clientOrderId": "018f22e2-7d00-7000-8000-000000000017"}}
+  },
+  {
+    "schemaVersion": "1.0.0",
+    "messageId": "018f22e2-7d00-7000-8000-000000000107",
+    "category": "health",
+    "occurredAt": "2026-07-18T12:10:05Z",
+    "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+    "payload": {"schemaVersion": "1.0.0", "id": "018f22e2-7d00-7000-8000-00000000000f", "component": "api", "status": "healthy", "observedAt": "2026-07-18T12:10:05Z"}
+  },
+  {
+    "schemaVersion": "1.0.0",
+    "messageId": "018f22e2-7d00-7000-8000-000000000108",
+    "category": "websocket",
+    "occurredAt": "2026-07-18T12:10:06Z",
+    "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+    "payload": {"operation": "subscribe", "channel": "quotes.AAPL", "subscriptionId": "018f22e2-7d00-7000-8000-000000000109"}
+  },
+  {
+    "schemaVersion": "1.0.0",
+    "messageId": "018f22e2-7d00-7000-8000-00000000010a",
+    "category": "audit",
+    "occurredAt": "2026-07-18T12:10:07Z",
+    "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+    "payload": {"schemaVersion": "1.0.0", "id": "018f22e2-7d00-7000-8000-000000000010", "action": "order.place", "targetType": "Order", "targetId": "018f22e2-7d00-7000-8000-000000000016", "metadata": {"actorId": "018f22e2-7d00-7000-8000-000000000001", "occurredAt": "2026-07-18T12:10:00Z"}}
+  }
+]

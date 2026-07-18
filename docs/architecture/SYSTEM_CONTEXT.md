@@ -7,9 +7,9 @@ a macOS desktop client backed by an independently deployable server. The desktop
 must remain a client of stable server contracts; it must not become the server's
 process supervisor or sole deployment path.
 
-No previous product code was reused for this foundation. Milestone 1 contains
-the complete 54-file repository foundation: governance, local dependency
-infrastructure, ownership boundaries, validation, and design evidence.
+No previous product code was reused. Milestone 1 established the repository
+foundation; Milestone 2 defines shared structural contracts and the
+authoritative PostgreSQL model without implementing a product runtime.
 
 ## System boundary
 
@@ -18,7 +18,7 @@ flowchart LR
     Person[Operator]
     Desktop[Future macOS desktop<br/>Tauri 2 + Rust + React + TypeScript + Vite]
     API[Future independent server<br/>Python 3.12+ + FastAPI]
-    Data[(Future managed data services)]
+    Data[(PostgreSQL authoritative data<br/>structural foundation)]
     External[Approved external services]
 
     Person --> Desktop
@@ -32,8 +32,8 @@ The future React and TypeScript application is built by Vite. Tauri 2 and Rust
 supply the macOS native shell and narrowly scoped native capabilities. Python
 3.12+ and FastAPI supply the independent network API, business orchestration,
 authentication enforcement, and health endpoints. These choices describe the
-intended Milestone 2 direction; no runtime implementation is authorized in
-Milestone 1.
+intended future runtime direction; no runtime implementation is authorized in
+Milestone 2.
 
 ## Files
 
@@ -42,17 +42,20 @@ Milestone 1.
   Python quality policy.
 - `docker-compose.yml` and `infrastructure/` define local dependencies,
   observability, health checks, and deployment ownership boundaries.
-- `apps/`, `services/`, and `packages/` contain README-only ownership boundaries.
+- `apps/` and `services/` remain README-only ownership boundaries.
+- `packages/shared-types/` and `packages/event-contracts/` own versioned
+  language-neutral contracts.
+- `infrastructure/database/` owns PostgreSQL metadata and migrations.
 - `docs/architecture/SYSTEM_CONTEXT.md` owns external actors and boundaries.
 - `docs/architecture/REPOSITORY.md` owns the planned repository layout.
 - `docs/security/FOUNDATION.md` owns the initial threat and control baseline.
 - `docs/deployment/` owns local environment and macOS toolchain guidance.
 - `docs/testing/STRATEGY.md` owns the future test pyramid and evidence rules.
 - `docs/operations/MILESTONE_1.md` is the milestone evidence and gate record.
+- `docs/operations/MILESTONE_2.md` records contract/database evidence.
 
-All repository scaffolding and local dependency infrastructure are approved
-Milestone 1 deliverables. There is no application, backend, frontend, Rust,
-packaging, app, or DMG source yet.
+There is no application, backend service, frontend, Rust, packaging, app, or
+DMG source.
 
 ## Commands
 
@@ -71,7 +74,8 @@ health status, and tears the stack down after the check.
 - Markdown syntax and formatting through pre-commit.
 - Required-section enforcement in `foundation.yml`.
 - Human architecture review for boundary clarity.
-- Future contract tests between desktop and server.
+- Versioned contract validation and compatibility tests.
+- PostgreSQL migration and constraint tests.
 - Future server deployment test with no desktop process present.
 
 ## Results
@@ -87,7 +91,8 @@ No runtime success is inferred from static documentation validation.
 
 - Authentication provider, data store, queue, and external integrations are not
   selected.
-- API versioning and compatibility windows are not yet specified.
+- Future service endpoint topology remains unspecified; Milestone 2 defines
+  message schemas only.
 - Offline desktop behavior and update delivery are undecided.
 - Deployment topology and availability targets remain open.
 
@@ -109,15 +114,13 @@ failing the desktop must not stop the server or invalidate server availability.
   responsibilities are explicit.
 - The desktop and server lifecycles are independent.
 - Trust boundaries and untrusted-client assumptions are identified.
-- Runtime evidence is marked NOT RUN or BLOCKED.
+- Out-of-scope runtime evidence is marked NOT APPLICABLE.
 - No application implementation is represented as complete.
 
-Milestone 1 acceptance does not authorize Milestone 2.
+Milestone 2 authorization is limited to contracts and database structure.
 
 ## Next milestone
 
-Milestone 2 may begin only after an explicit gate decision recorded by an
-authorized maintainer. Candidate work includes API contracts, an independently
-runnable Python 3.12+ FastAPI skeleton, a Tauri 2/Rust/React/TypeScript/Vite
-shell, dependency definitions, and contract tests. Until that decision, all
-Milestone 2 implementation is unauthorized.
+Milestone 3 remains unauthorized. Authentication, service runtimes,
+Tauri/React UI, broker integration, market feeds, strategies, and order
+placement require a separate gate.

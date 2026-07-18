@@ -3,8 +3,8 @@
 ## Objectives
 
 Establish security invariants before runtime code is authorized. Milestone 1
-protects repository integrity, makes scanner failures visible, and records the
-future desktop/server trust boundary. It does not claim product security.
+protects repository integrity; Milestone 2 adds structural contract and
+database controls. Neither milestone claims product security.
 
 No prior implementation or security configuration was reused.
 
@@ -35,6 +35,8 @@ Initial abuse cases:
 - `.github/CODEOWNERS` requires security-sensitive path review once its team is
   validated and branch protection is configured.
 - `.pre-commit-config.yaml` detects private keys and validates tracked content.
+- `uv.lock` locks contract, migration, database-driver, and validation tooling.
+- Contract fixtures and database seeds are synthetic and development-only.
 
 ## Commands
 
@@ -60,6 +62,10 @@ tokens into command lines, checked-in configuration, or shell history.
 - SPDX JSON SBOM creation and short-lived artifact upload.
 - Private-key detection before commit.
 - Workflow permission and persisted-credential review.
+- Contract rejection tests for malformed identifiers, timestamps, decimals,
+  idempotency metadata, and invalid states.
+- Database constraints preventing invalid financial and lifecycle state.
+- Append-only audit mutation tests.
 
 Future runtime security tests must cover authentication, object-level
 authorization, rate limiting, input validation, CORS, CSRF where applicable,
@@ -73,6 +79,8 @@ Tauri capability allowlists, secure update verification, and audit logging.
 - Local SPDX SBOM generation: PASS.
 - Runtime threat and macOS signing/notarization tests: NOT APPLICABLE to
   Milestone 1; no product runtime or artifact exists.
+- Milestone 2 detect-secrets, Gitleaks, Trivy, OSV, workflow lint, and SPDX
+  generation: PASS locally with no findings.
 
 Scanner configuration is evidence of intent, not evidence that a scan passed.
 
@@ -82,8 +90,8 @@ Scanner configuration is evidence of intent, not evidence that a scan passed.
 - GitHub action references are release tags, not immutable commit SHAs.
 - Root `SECURITY.md` defines reporting and response policy; hosting contacts
   still require verification.
-- `pyproject.toml` declares quality tooling but no runtime dependencies; there
-  is no lockfile, so dependency evidence remains limited.
+- Contract and database tooling is locked, but future service dependencies do
+  not yet exist.
 - Signing certificate custody, notarization, update signing, and incident
   response ownership remain undecided.
 - Vulnerability exceptions have no approved process; suppressions are therefore
@@ -117,13 +125,12 @@ Mandatory invariants:
 - Desktop/server isolation and future native-shell restrictions are explicit.
 - No secret, exception, or vulnerability suppression is introduced.
 
-Milestone 1 security acceptance is a design gate only. Milestone 2 remains
-unauthorized until maintainers approve the known issues and next controls.
+Milestone 2 security acceptance remains structural; it does not authorize a
+network service, authentication implementation, or trading behavior.
 
 ## Next milestone
 
-Before runtime work, approve identity and authorization models, API exposure,
-secret storage, development certificate policy, dependency lockfiles, security
-logging, and data classification. Add Vite/Tauri and FastAPI security tests only
-when corresponding source exists. Separately authorize signing and notarization;
-do not add DMG or release jobs preemptively.
+Milestone 3 remains unauthorized. Before runtime work, separately approve API
+exposure, secret storage, authentication behavior, and runtime data
+classification. Add Vite/Tauri and FastAPI security tests only when their scope
+and source are authorized.

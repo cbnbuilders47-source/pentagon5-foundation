@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "messageId": "018f22e2-7d00-7000-8000-000000000201",
+  "category": "domain_event",
+  "occurredAt": "2026-07-18T12:20:00Z",
+  "metadata": {
+    "correlationId": "018f22e2-7d00-7000-8000-000000000200"
+  },
+  "payload": {
+    "eventType": "user.created",
+    "aggregateType": "User",
+    "aggregateId": "018f22e2-7d00-7000-8000-000000000001",
+    "sequence": 1,
+    "entity": {
+      "schemaVersion": "1.0.0",
+      "id": "018f22e2-7d00-7000-8000-000000000001",
+      "email": "original-v1@example.com",
+      "status": "active"
+    }
+  }
+}

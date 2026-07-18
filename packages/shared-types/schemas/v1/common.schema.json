@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pentagon5.dev/schemas/shared/common/1.0.0",
+  "title": "Pentagon5 shared contract primitives",
+  "$defs": {
+    "SchemaVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "UuidV7": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "UtcTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "Decimal": {
+      "type": "string",
+      "pattern": "^(?:0|-?(?:0\\.[0-9]*[1-9]|[1-9][0-9]*(?:\\.[0-9]*[1-9])?))$",
+      "description": "Canonical base-10 value: no exponent, leading plus/zero, or trailing fractional zero."
+    },
+    "NonNegativeDecimal": {
+      "type": "string",
+      "pattern": "^(?:0|(?:0\\.[0-9]*[1-9]|[1-9][0-9]*(?:\\.[0-9]*[1-9])?))$"
+    },
+    "IdempotencyKey": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "CorrelationMetadata": {
+      "type": "object",
+      "required": ["correlationId"],
+      "properties": {
+        "correlationId": {"$ref": "#/$defs/UuidV7"},
+        "causationId": {"$ref": "#/$defs/UuidV7"}
+      },
+      "additionalProperties": false
+    },
+    "IdempotencyMetadata": {
+      "type": "object",
+      "required": ["idempotencyKey"],
+      "properties": {
+        "idempotencyKey": {"$ref": "#/$defs/IdempotencyKey"},
+        "replayed": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "AuditMetadata": {
+      "type": "object",
+      "required": ["actorId", "occurredAt"],
+      "properties": {
+        "actorId": {"$ref": "#/$defs/UuidV7"},
+        "occurredAt": {"$ref": "#/$defs/UtcTimestamp"},
+        "sourceIp": {"type": "string"},
+        "userAgent": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "VersionedEntity": {
+      "type": "object",
+      "required": ["schemaVersion", "id"],
+      "properties": {
+        "schemaVersion": {"$ref": "#/$defs/SchemaVersion"},
+        "id": {"$ref": "#/$defs/UuidV7"}
+      }
+    },
+    "PageRequest": {
+      "type": "object",
+      "properties": {
+        "cursor": {"type": "string", "minLength": 1},
+        "limit": {"type": "integer", "minimum": 1, "maximum": 200}
+      },
+      "additionalProperties": false
+    },
+    "PageInfo": {
+      "type": "object",
+      "required": ["hasNextPage"],
+      "properties": {
+        "nextCursor": {"type": "string", "minLength": 1},
+        "hasNextPage": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  }
+}

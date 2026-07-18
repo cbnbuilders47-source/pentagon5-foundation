@@ -26,7 +26,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Validate Milestone 1 shape
+      - name: Validate Milestone 2 shape
         shell: bash
         run: |
           set -euo pipefail
@@ -49,14 +49,29 @@ jobs:
             apps/macos-desktop/README.md
             docker-compose.yml
             docs/api/README.md
+            docs/architecture/DATABASE_ENTITY_MAP.md
             docs/architecture/SYSTEM_CONTEXT.md
             docs/architecture/REPOSITORY.md
+            docs/architecture/decisions/0001-contract-source-and-versioning.md
+            docs/architecture/decisions/0002-identifiers-time-and-decimals.md
+            docs/architecture/decisions/0003-postgresql-authoritative-store.md
+            docs/architecture/decisions/0004-uuidv7-identifiers.md
             docs/security/FOUNDATION.md
             docs/deployment/LOCAL_DEVELOPMENT.md
             docs/deployment/MACOS_TOOLCHAIN.md
             docs/testing/STRATEGY.md
             docs/operations/MILESTONE_1.md
+            docs/operations/MILESTONE_2.md
+            infrastructure/__init__.py
             infrastructure/database/README.md
+            infrastructure/database/__init__.py
+            infrastructure/database/alembic.ini
+            infrastructure/database/metadata.py
+            infrastructure/database/metadata_0001.py
+            infrastructure/database/migrations/env.py
+            infrastructure/database/migrations/script.py.mako
+            infrastructure/database/migrations/versions/0001_initial_database.py
+            infrastructure/database/seed.development.sql
             infrastructure/deployment/README.md
             infrastructure/docker/otel/collector.yml
             infrastructure/docker/postgres/init/.gitkeep
@@ -66,8 +81,15 @@ jobs:
             infrastructure/scripts/stack-health.sh
             packages/api-client/README.md
             packages/event-contracts/README.md
+            packages/event-contracts/schemas/v1/message.schema.json
             packages/shared-types/README.md
+            packages/shared-types/schemas/v1/common.schema.json
+            packages/shared-types/schemas/v1/domain.schema.json
             packages/test-fixtures/README.md
+            packages/test-fixtures/backward-compatible/v1.0.0.json
+            packages/test-fixtures/invalid/messages.json
+            packages/test-fixtures/valid/domains.json
+            packages/test-fixtures/valid/messages.json
             packages/theme-system/README.md
             packages/ui-components/README.md
             pyproject.toml
@@ -84,14 +106,17 @@ jobs:
             services/signal-allocator/README.md
             services/strategy-engine/README.md
             tests/contract/.gitkeep
+            tests/contract/test_contract_fixtures.py
+            tests/contract/test_contract_schemas.py
             tests/contract/test_repository_contract.py
             tests/end-to-end/.gitkeep
             tests/integration/.gitkeep
+            tests/integration/test_database.py
             tests/security/.gitkeep
             uv.lock
           )
-          ((${#required[@]} == 58)) || {
-            echo "::error::Internal contract must contain exactly 58 paths"
+          ((${#required[@]} == 83)) || {
+            echo "::error::Internal contract must contain exactly 83 paths"
             exit 1
           }
           for path in "${required[@]}"; do
@@ -99,7 +124,7 @@ jobs:
               if [[ "$path" == *.gitkeep ]]; then
                 test -f "$path" && continue
               fi
-              echo "::error file=$path::Required Milestone 1 file is missing or empty"
+              echo "::error file=$path::Required Milestone 2 file is missing or empty"
               exit 1
             }
           done
@@ -108,7 +133,7 @@ jobs:
           if ! diff -u \
             <(printf '%s\n' "${expected[@]}") \
             <(printf '%s\n' "${actual[@]}"); then
-            echo "::error::Repository does not match the exact 58-file contract"
+            echo "::error::Repository does not match the exact 83-file contract"
             exit 1
           fi
 
@@ -128,6 +153,7 @@ jobs:
             "Next milestone"
           )
           documents=(
+            docs/architecture/DATABASE_ENTITY_MAP.md
             docs/architecture/SYSTEM_CONTEXT.md
             docs/architecture/REPOSITORY.md
             docs/security/FOUNDATION.md
@@ -135,6 +161,7 @@ jobs:
             docs/deployment/MACOS_TOOLCHAIN.md
             docs/testing/STRATEGY.md
             docs/operations/MILESTONE_1.md
+            docs/operations/MILESTONE_2.md
           )
           for document in "${documents[@]}"; do
             for heading in "${headings[@]}"; do
@@ -155,19 +182,26 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-          cache: pip
+          enable-cache: true
 
-      - name: Install pinned validation tooling
-        run: python -m pip install --disable-pip-version-check pre-commit==4.2.0
+      - name: Install locked validation tooling
+        run: uv sync --all-extras --locked
 
       - name: Validate all tracked files
         env:
           SKIP: compose-config
-        run: pre-commit run --all-files --show-diff-on-failure
+        run: uv run pre-commit run --all-files --show-diff-on-failure
+
+      - name: Validate contracts and Python tooling
+        run: |
+          uv run ruff format --check .
+          uv run ruff check .
+          uv run mypy .
+          uv run pytest tests/contract
 
       - name: Parse every TOML document
         shell: bash
@@ -189,6 +223,46 @@ jobs:
                   tomllib.load(stream)
               print(f"valid TOML: {path}")
           PY
+
+  contract-database:
+    name: Contracts and PostgreSQL migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.2-alpine
+        env:
+          POSTGRES_DB: pentagon5
+          POSTGRES_USER: pentagon5
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready --username pentagon5 --dbname pentagon5"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install locked Milestone 2 dependencies
+        run: uv sync --all-extras --locked
+
+      - name: Test contracts and isolated database migrations
+        env:
+          TEST_DATABASE_URL: postgresql://pentagon5@127.0.0.1:5432/postgres
+        run: |
+          uv run pytest tests/contract
+          uv run pytest tests/integration
 
   dependency-health:
     name: Compose dependency health

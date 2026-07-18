@@ -2,8 +2,9 @@
 
 ## Objectives
 
-Provide a reproducible Milestone 1 validation path for repository checks and
-local dependency infrastructure without inventing an application runtime.
+Provide a reproducible validation path for the accepted foundation, versioned
+Milestone 2 contracts, PostgreSQL migrations, and local dependencies without
+inventing an application runtime.
 
 No previous application code was reused. All foundation files in this
 repository were created for Milestone 1. Do not source configuration from
@@ -32,6 +33,10 @@ must not be represented as a passing health check.
 - `.github/workflows/foundation.yml` is the hosted validation source of truth.
 - `.github/workflows/security.yml` defines hosted security evidence.
 - `docs/operations/MILESTONE_1.md` records actual execution results.
+- `docs/operations/MILESTONE_2.md` records contract and database acceptance.
+- `packages/shared-types/` and `packages/event-contracts/` own JSON schemas.
+- `infrastructure/database/` owns SQLAlchemy metadata, Alembic migrations, and
+  development-only seeds.
 - `.env.example` contains development-only defaults. A copied `.env` is local,
   private, and ignored.
 
@@ -43,9 +48,14 @@ From the repository root:
 make doctor
 make bootstrap
 make stack-config
+make contracts-check
+make database-test
+make database-migrate
+make database-seed
 make stack-up
 make stack-health
 make verify
+make acceptance
 make stack-down
 ```
 
@@ -60,6 +70,9 @@ removal requires a separate explicit operator action.
 - Review workflow permissions and timeout limits.
 - Validate Compose rendering before starting dependencies and require every
   started dependency to report a declared healthy state.
+- Validate versioned contract fixtures and backward compatibility.
+- Upgrade an empty temporary database, downgrade it, upgrade it repeatedly,
+  and enforce schema constraints.
 
 ## Results
 
@@ -69,15 +82,16 @@ removal requires a separate explicit operator action.
 - Dependency configuration, startup, health, teardown, and restart: PASS.
 - Desktop and server startup: NOT APPLICABLE to Milestone 1; no product source
   exists or is authorized.
+- Milestone 2 contract, database, security, and restart acceptance: PASS; full
+  evidence is recorded in `docs/operations/MILESTONE_2.md`.
 
 ## Known issues
 
 - Installation method varies across macOS environments.
 - Pre-commit downloads third-party hook environments on first run.
-- There is no application configuration schema.
 - Dependency defaults are development-only and must not be promoted to
   production configuration.
-- No local server URL, desktop dev URL, or API contract exists.
+- No local application server or desktop URL exists.
 
 ## Security
 
@@ -98,12 +112,10 @@ desktop may connect to it, but must not silently install, own, or terminate it.
 - Instructions do not create unauthorized product source.
 - Future dependency cleanup is explicit and removes transient volumes.
 
-Local validation alone does not approve Milestone 2.
+Local validation must pass before Milestone 2 acceptance is recorded.
 
 ## Next milestone
 
-After explicit authorization, add versioned contracts, database migrations, a
-Python 3.12+ FastAPI foundation, and the Tauri 2/Rust/React/TypeScript/Vite
-shell with lockfiles and separate server/desktop startup commands. The FastAPI
-command must work without the desktop running; that independence becomes an
-acceptance test.
+Milestone 3 remains unauthorized. Authentication, FastAPI services,
+Tauri/React desktop source, broker connectivity, market feeds, and trading
+behavior are outside these commands.

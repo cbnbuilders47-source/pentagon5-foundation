@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "desktop",
+  "description": "Minimal desktop window and fixed authentication callback access",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "deep-link:default"
+  ]
+}

@@ -8,6 +8,7 @@ scripts as a migration mechanism.
 
 - `metadata.py`: authoritative SQLAlchemy Core tables, constraints, and indexes.
 - `metadata_0001.py`: immutable metadata snapshot consumed by migration 0001.
+- `metadata_0002.py`: immutable identity/authentication additions for migration 0002.
 - `alembic.ini`: Alembic configuration.
 - `migrations/`: transactional migration environment and revisions.
 - `seed.development.sql`: deterministic, idempotent mock data for development.
@@ -32,6 +33,12 @@ Alembic is configured for transactional PostgreSQL DDL. The initial revision
 creates and removes all bounded schemas, tables, indexes, constraints, and the
 append-only audit trigger. Existing migration snapshots are immutable; every
 later schema change requires a new revision and a new reviewed snapshot.
+
+Revision 0002 adds OIDC subject bindings, encrypted transient authorization
+flows, encrypted single-use native login grants, one-time WebSocket ticket
+fingerprints, and session events. Existing
+session/device/RBAC tables are reused; no plaintext session value or provider
+credential is persisted.
 
 ## Development seed
 

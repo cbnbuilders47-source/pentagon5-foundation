@@ -21,7 +21,7 @@ if ! docker info >/dev/null 2>&1; then
   exit 1
 fi
 
-services=(postgres redis minio otel-collector prometheus grafana)
+services=(postgres redis minio otel-collector prometheus grafana authentication api-gateway)
 
 for service in "${services[@]}"; do
   container_id="$(docker compose ps --quiet "$service")"
@@ -62,5 +62,13 @@ check_http minio 9000 /minio/health/live
 check_http otel-collector 13133 /
 check_http prometheus 9090 /-/healthy
 check_http grafana 3000 /api/health
+check_http api-gateway 8000 /v1/system/health/ready
 
-printf 'stack-health: all local infrastructure services are healthy\n'
+if ! docker compose exec -T authentication python -c \
+  "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/system/health/ready', timeout=5)"; then
+  printf 'stack-health: internal authentication readiness check failed\n' >&2
+  exit 1
+fi
+printf 'reachable: authentication (internal only)\n'
+
+printf 'stack-health: dependencies and independent backend processes are healthy\n'

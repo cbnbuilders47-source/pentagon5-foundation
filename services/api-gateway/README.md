@@ -1,5 +1,18 @@
 # API Gateway
 
-## NOT IMPLEMENTED
+The gateway is an independently launchable FastAPI process exposing the
+Milestone 3 system and authentication route surface. It deliberately contains
+no broker, market, strategy, order, risk, execution, reconciliation, or AI
+routes.
 
-This directory reserves the `api-gateway` service boundary. Milestone 1 defines no endpoints, processing, dependencies, deployment, or mock behavior. The future service must remain independently operable.
+For Milestone 3 only, the gateway mounts the authentication module in-process
+as a temporary modular deployment. The authentication and gateway factories
+remain separately executable and are tested independently. This is not network
+isolation; a later deployment milestone may move the same auth surface behind a
+separate network boundary.
+
+Run with `uvicorn pentagon5_gateway.app:create_app --factory`. The process uses
+the shared Python runtime for strict configuration, JSON logs, Prometheus
+metrics, request correlation, OTLP tracing, and database-backed readiness. Its
+WebSocket surface is restricted to one-time ticket access for `system.health`
+and `session.events`.

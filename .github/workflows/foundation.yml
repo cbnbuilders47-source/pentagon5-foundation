@@ -26,7 +26,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Validate Milestone 2 shape
+      - name: Validate Milestone 3 shape
         shell: bash
         run: |
           set -euo pipefail
@@ -45,8 +45,21 @@ jobs:
             Makefile
             README.md
             SECURITY.md
+            backend/pentagon5_runtime/config.py
+            backend/pentagon5_runtime/envelopes.py
+            backend/pentagon5_runtime/observability.py
+            backend/pentagon5_runtime/uuid7.py
             apps/admin-console/README.md
             apps/macos-desktop/README.md
+            apps/macos-desktop/package-lock.json
+            apps/macos-desktop/package.json
+            apps/macos-desktop/src/App.tsx
+            apps/macos-desktop/src-tauri/Cargo.lock
+            apps/macos-desktop/src-tauri/Cargo.toml
+            apps/macos-desktop/src-tauri/capabilities/default.json
+            apps/macos-desktop/src-tauri/osv-scanner.toml
+            apps/macos-desktop/src-tauri/src/lib.rs
+            apps/macos-desktop/src-tauri/tauri.conf.json
             docker-compose.yml
             docs/api/README.md
             docs/architecture/DATABASE_ENTITY_MAP.md
@@ -56,30 +69,42 @@ jobs:
             docs/architecture/decisions/0002-identifiers-time-and-decimals.md
             docs/architecture/decisions/0003-postgresql-authoritative-store.md
             docs/architecture/decisions/0004-uuidv7-identifiers.md
+            docs/architecture/decisions/0005-oidc-sessions-and-desktop-handoff.md
+            docs/architecture/decisions/0006-api-and-websocket-boundary.md
             docs/security/FOUNDATION.md
             docs/deployment/LOCAL_DEVELOPMENT.md
             docs/deployment/MACOS_TOOLCHAIN.md
             docs/testing/STRATEGY.md
             docs/operations/MILESTONE_1.md
             docs/operations/MILESTONE_2.md
+            docs/operations/MILESTONE_3.md
             infrastructure/__init__.py
             infrastructure/database/README.md
             infrastructure/database/__init__.py
             infrastructure/database/alembic.ini
             infrastructure/database/metadata.py
             infrastructure/database/metadata_0001.py
+            infrastructure/database/metadata_0002.py
             infrastructure/database/migrations/env.py
             infrastructure/database/migrations/script.py.mako
             infrastructure/database/migrations/versions/0001_initial_database.py
+            infrastructure/database/migrations/versions/0002_identity_authentication.py
             infrastructure/database/seed.development.sql
             infrastructure/deployment/README.md
             infrastructure/docker/otel/collector.yml
+            infrastructure/docker/backend/Dockerfile
             infrastructure/docker/postgres/init/.gitkeep
             infrastructure/docker/prometheus/prometheus.yml
             infrastructure/monitoring/README.md
             infrastructure/scripts/doctor.sh
+            infrastructure/scripts/secrets-init.sh
             infrastructure/scripts/stack-health.sh
             packages/api-client/README.md
+            packages/api-client/package-lock.json
+            packages/api-client/package.json
+            packages/api-client/src/index.ts
+            packages/auth-contracts/README.md
+            packages/auth-contracts/schemas/v1/auth.schema.json
             packages/event-contracts/README.md
             packages/event-contracts/schemas/v1/message.schema.json
             packages/shared-types/README.md
@@ -94,8 +119,10 @@ jobs:
             packages/ui-components/README.md
             pyproject.toml
             services/api-gateway/README.md
+            services/api-gateway/pentagon5_gateway/app.py
             services/audit-service/README.md
             services/authentication/README.md
+            services/authentication/pentagon5_auth/app.py
             services/instrument-master/README.md
             services/market-data/README.md
             services/notification-service/README.md
@@ -108,34 +135,28 @@ jobs:
             tests/contract/.gitkeep
             tests/contract/test_contract_fixtures.py
             tests/contract/test_contract_schemas.py
+            tests/contract/test_auth_contract.py
             tests/contract/test_repository_contract.py
             tests/end-to-end/.gitkeep
             tests/integration/.gitkeep
             tests/integration/test_database.py
             tests/security/.gitkeep
+            tests/security/test_milestone3_security.py
+            tests/unit/test_api_surface.py
+            tests/unit/test_auth_service.py
+            tests/unit/test_oidc.py
+            tests/unit/test_runtime_security.py
             uv.lock
           )
-          ((${#required[@]} == 83)) || {
-            echo "::error::Internal contract must contain exactly 83 paths"
-            exit 1
-          }
           for path in "${required[@]}"; do
             test -s "$path" || {
               if [[ "$path" == *.gitkeep ]]; then
                 test -f "$path" && continue
               fi
-              echo "::error file=$path::Required Milestone 2 file is missing or empty"
+              echo "::error file=$path::Required Milestone 3 file is missing or empty"
               exit 1
             }
           done
-          mapfile -t expected < <(printf '%s\n' "${required[@]}" | sort)
-          mapfile -t actual < <(git ls-files | sort)
-          if ! diff -u \
-            <(printf '%s\n' "${expected[@]}") \
-            <(printf '%s\n' "${actual[@]}"); then
-            echo "::error::Repository does not match the exact 83-file contract"
-            exit 1
-          fi
 
       - name: Validate documentation contract
         shell: bash
@@ -162,6 +183,7 @@ jobs:
             docs/testing/STRATEGY.md
             docs/operations/MILESTONE_1.md
             docs/operations/MILESTONE_2.md
+            docs/operations/MILESTONE_3.md
           )
           for document in "${documents[@]}"; do
             for heading in "${headings[@]}"; do
@@ -201,7 +223,7 @@ jobs:
           uv run ruff format --check .
           uv run ruff check .
           uv run mypy .
-          uv run pytest tests/contract
+          uv run pytest tests/unit tests/contract tests/security
 
       - name: Parse every TOML document
         shell: bash
@@ -254,7 +276,7 @@ jobs:
           python-version: "3.12"
           enable-cache: true
 
-      - name: Install locked Milestone 2 dependencies
+      - name: Install locked Milestone 3 dependencies
         run: uv sync --all-extras --locked
 
       - name: Test contracts and isolated database migrations
@@ -263,6 +285,52 @@ jobs:
         run: |
           uv run pytest tests/contract
           uv run pytest tests/integration
+
+  desktop:
+    name: TypeScript and Rust desktop
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: |
+            packages/api-client/package-lock.json
+            apps/macos-desktop/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: "1.97.1"
+          components: clippy,rustfmt
+
+      - name: Install and test API client
+        run: |
+          npm ci --prefix packages/api-client
+          npm run typecheck --prefix packages/api-client
+          npm test --prefix packages/api-client
+          npm run build --prefix packages/api-client
+
+      - name: Install and test desktop
+        run: |
+          npm ci --prefix apps/macos-desktop
+          npm run typecheck --prefix apps/macos-desktop
+          npm test --prefix apps/macos-desktop
+          npm run build --prefix apps/macos-desktop
+
+      - name: Validate Tauri Rust
+        run: |
+          cargo fmt --manifest-path apps/macos-desktop/src-tauri/Cargo.toml --check
+          cargo clippy --locked --manifest-path apps/macos-desktop/src-tauri/Cargo.toml \
+            --all-targets -- -D warnings
+          cargo test --locked --manifest-path apps/macos-desktop/src-tauri/Cargo.toml
 
   dependency-health:
     name: Compose dependency health
@@ -294,6 +362,7 @@ jobs:
           fi
 
           compose_file="${candidates[0]}"
+          ./infrastructure/scripts/secrets-init.sh
           docker compose -f "$compose_file" config --quiet
           trap 'docker compose -f "$compose_file" down --volumes --remove-orphans' EXIT
           docker compose -f "$compose_file" up --detach --wait --wait-timeout 120

@@ -42,12 +42,17 @@ SCHEMAS = {
 EXPECTED_TABLES = {
     "audit.events",
     "identity.devices",
+    "identity.login_grants",
+    "identity.oidc_flows",
+    "identity.oidc_identities",
     "identity.permissions",
     "identity.role_permissions",
     "identity.roles",
+    "identity.session_events",
     "identity.sessions",
     "identity.user_roles",
     "identity.users",
+    "identity.websocket_tickets",
     "market.instruments",
     "market.market_feed_health_events",
     "market.quotes",
@@ -411,6 +416,15 @@ def test_development_seed_is_gated_and_idempotent() -> None:
                 ).fetchone()
             )
             assert count == 1
+            health_permission = _required_value(
+                connection.execute(
+                    """
+                    SELECT count(*) FROM identity.permissions
+                    WHERE code = 'system.health.read'
+                    """
+                ).fetchone()
+            )
+            assert health_permission == 1
             sound_preferences = _required_value(
                 connection.execute(
                     """

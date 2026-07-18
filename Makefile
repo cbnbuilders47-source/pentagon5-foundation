@@ -4,9 +4,10 @@ export PATH := /opt/homebrew/opt/node/bin:$(HOME)/.cargo/bin:$(HOME)/.local/bin:
 
 .DEFAULT_GOAL := bootstrap
 
-.PHONY: doctor bootstrap contracts-check database-up database-migrate \
-	database-downgrade database-seed database-test quality stack-config \
-	stack-up stack-health stack-down verify acceptance
+.PHONY: doctor bootstrap secrets-init contracts-check runtime-test database-up \
+	database-migrate database-downgrade database-seed database-test quality \
+	frontend-setup frontend-test desktop-build rust-test stack-config stack-up \
+	stack-health stack-down backend-up backend-health verify acceptance
 
 doctor:
 	@./infrastructure/scripts/doctor.sh
@@ -14,11 +15,20 @@ doctor:
 bootstrap:
 	@$(MAKE) doctor
 	@uv sync --all-extras --locked
+	@npm ci --prefix packages/api-client
+	@npm ci --prefix apps/macos-desktop
+	@cargo fetch --locked --manifest-path apps/macos-desktop/src-tauri/Cargo.toml
 	@uv run pre-commit install
-	@printf 'bootstrap: locked Milestone 2 dependencies and Git hooks are ready\n'
+	@printf 'bootstrap: locked Milestone 3 dependencies and Git hooks are ready\n'
+
+secrets-init:
+	@./infrastructure/scripts/secrets-init.sh
 
 contracts-check:
 	@uv run pytest tests/contract
+
+runtime-test:
+	@uv run pytest tests/unit tests/contract tests/security
 
 database-up:
 	@docker compose up --detach --wait postgres
@@ -47,7 +57,27 @@ quality:
 	@uv run ruff format --check .
 	@uv run ruff check .
 	@uv run mypy .
-	@uv run pytest tests/contract
+	@uv run pytest tests/unit tests/contract tests/security
+
+frontend-setup:
+	@npm ci --prefix packages/api-client
+	@npm ci --prefix apps/macos-desktop
+
+frontend-test: frontend-setup
+	@npm run typecheck --prefix packages/api-client
+	@npm test --prefix packages/api-client
+	@npm run build --prefix packages/api-client
+	@npm run typecheck --prefix apps/macos-desktop
+	@npm test --prefix apps/macos-desktop
+
+desktop-build: frontend-test
+	@npm run build --prefix apps/macos-desktop
+
+rust-test:
+	@cargo fmt --manifest-path apps/macos-desktop/src-tauri/Cargo.toml --check
+	@cargo clippy --locked --manifest-path apps/macos-desktop/src-tauri/Cargo.toml \
+		--all-targets -- -D warnings
+	@cargo test --locked --manifest-path apps/macos-desktop/src-tauri/Cargo.toml
 
 stack-config:
 	@if [[ -e .env || -L .env ]]; then \
@@ -63,7 +93,7 @@ stack-config:
 		printf 'stack-config: .env.example is absent; using development defaults from docker-compose.yml\n'; \
 	fi
 
-stack-up:
+stack-up: secrets-init database-migrate
 	@docker compose up --detach --wait
 
 stack-health:
@@ -73,12 +103,17 @@ stack-down:
 	@docker compose down --remove-orphans
 	@printf 'stack-down: named volumes were preserved\n'
 
-verify: doctor quality
-	@bash -n infrastructure/scripts/doctor.sh infrastructure/scripts/stack-health.sh
+backend-up: stack-up
+
+backend-health: stack-health
+
+verify: doctor quality frontend-test desktop-build rust-test
+	@bash -n infrastructure/scripts/doctor.sh infrastructure/scripts/secrets-init.sh \
+		infrastructure/scripts/stack-health.sh
 	@uv run pre-commit run --files $$(git ls-files --cached --others --exclude-standard) --show-diff-on-failure
 	@docker compose config --quiet
 	@uv lock --check
-	@printf 'verify: contracts, quality, and local infrastructure configuration are valid\n'
+	@printf 'verify: Milestone 3 contracts, runtimes, desktop, and configuration are valid\n'
 
 acceptance: verify database-test stack-up stack-health
-	@printf 'acceptance: Milestone 2 local acceptance checks passed\n'
+	@printf 'acceptance: Milestone 3 local acceptance checks passed\n'

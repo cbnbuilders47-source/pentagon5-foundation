@@ -2,14 +2,17 @@
 
 ## Objectives
 
-Define the authoritative Milestone 2 PostgreSQL entities, ownership schemas,
-and permitted relationships without authorizing a service implementation.
+Define the authoritative PostgreSQL entities through authorized Milestone 3.
+Migration `0002` adds identity-runtime persistence without authorizing trading
+or other product runtimes.
 
 ## Files
 
 `infrastructure/database/metadata.py` is the current model.
 `metadata_0001.py` is the immutable initial-migration snapshot, and
 `migrations/versions/0001_initial_database.py` applies it transactionally.
+`metadata_0002.py` is the immutable additive identity snapshot, and
+`migrations/versions/0002_identity_authentication.py` applies it.
 
 ## Commands
 
@@ -20,14 +23,15 @@ Use `make database-test`, `make database-migrate`, `make database-seed`, and
 
 Integration tests create isolated temporary databases and verify upgrade,
 downgrade, repeat migration, constraints, precision, UTC behavior, development
-seeding, and append-only audit records.
+seeding, append-only audit records, and the additive `0002` lifecycle.
 
 ## Results
 
 The entity map contains seven bounded schemas:
 
 - `identity`: `users`, `roles`, `permissions`, `user_roles`,
-  `role_permissions`, `devices`, and `sessions`.
+  `role_permissions`, `devices`, `sessions`, `oidc_identities`, `oidc_flows`,
+  `login_grants`, `websocket_tickets`, and `session_events`.
 - `personalization`: `themes`, `background_assets`, `sound_assets`,
   `user_preferences`, `sound_preferences`, `notification_preferences`,
   `notification_events`, and `dashboard_layouts`.
@@ -40,10 +44,11 @@ The entity map contains seven bounded schemas:
   `broker_health`, `manual_broker_exits`, and `reconciliation_states`.
 - `audit`: append-only `events`.
 
-Foreign keys enforce identity, workspace, instrument, order, position, risk,
-and reconciliation relationships. Cross-schema references are structural
-integrity controls, not permission for future services to write another
-boundary's tables.
+Migration `0002` stores only provider identity links, authenticated-encrypted
+transient OIDC and grant payloads, HMAC fingerprints, expiry metadata,
+channel-bound tickets, and session events. Foreign keys enforce bounded
+relationships; structural trading tables remain authorization-neutral and do
+not imply an implemented trading runtime.
 
 ## Known issues
 
@@ -52,19 +57,20 @@ partitioning, and production backup policy require later authorization.
 
 ## Security
 
-No password, API key, broker credential, session token, or signing secret is
-stored. Session rows retain only a non-reversible token fingerprint. Audit
-events reject update, delete, and truncate operations.
+No password, API key, broker credential, plaintext session token, grant code,
+OIDC state, ticket, or signing secret is stored. Session and transient lookup
+rows retain keyed HMAC fingerprints; transient payloads are
+authenticated-encrypted. Audit events reject update, delete, and truncate
+operations.
 
 ## Acceptance
 
 All financial values use fixed-precision `numeric`; identifiers use UUID
 storage with application-generated UUIDv7 contracts; timestamps use
-`timestamptz`; trading modes explicitly include observation, paper,
-small-live, live, and emergency.
+`timestamptz`. Focused migration and identity tests passed during
+implementation; final full Milestone 3 acceptance remains pending.
 
 ## Next milestone
 
-Milestone 3 remains unauthorized. This map does not authorize authentication,
-service repositories, broker access, market feeds, strategies, or order
-placement.
+Milestone 4 is not authorized. This map does not authorize broker, market,
+strategy, order, execution, risk, reconciliation, or AI runtimes.

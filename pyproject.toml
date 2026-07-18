@@ -5,10 +5,22 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pentagon5-foundation"
 version = "0.1.0"
-description = "PENTAGON5 shared contracts and PostgreSQL foundation"
+description = "PENTAGON5 shared contracts, Python runtime, and backend foundation"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+  "fastapi>=0.116",
+  "httpx>=0.28",
+  "opentelemetry-api>=1.35",
+  "opentelemetry-exporter-otlp-proto-http>=1.35",
+  "opentelemetry-instrumentation-fastapi>=0.56b0",
+  "opentelemetry-sdk>=1.35",
+  "prometheus-client>=0.22",
+  "psycopg[binary]>=3.2",
+  "pyjwt[crypto]>=2.10",
+  "sqlalchemy>=2.0",
+  "uvicorn>=0.35",
+]
 
 [project.optional-dependencies]
 quality = [
@@ -16,6 +28,7 @@ quality = [
   "mypy>=1.10",
   "pre-commit>=4.0",
   "pytest>=8.0",
+  "pytest-asyncio>=1.0",
   "ruff>=0.5",
   "types-jsonschema>=4.23",
   "yamllint>=1.35",
@@ -32,6 +45,10 @@ database = [
 [tool.setuptools]
 py-modules = []
 
+[tool.setuptools.packages.find]
+where = ["backend", "services/authentication", "services/api-gateway"]
+include = ["pentagon5_*"]
+
 [tool.ruff]
 target-version = "py312"
 line-length = 100
@@ -43,6 +60,7 @@ select = ["E", "F", "I", "UP"]
 python_version = "3.12"
 strict = true
 explicit_package_bases = true
+mypy_path = ["backend", "services/authentication", "services/api-gateway"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

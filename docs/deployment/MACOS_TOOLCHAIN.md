@@ -2,40 +2,39 @@
 
 ## Objectives
 
-Define how future macOS desktop tooling will be selected and verified without
-installing or claiming an application in Milestone 1. The approved desktop
-stack is Tauri 2, Rust, React, TypeScript, and Vite. Python 3.12+ FastAPI is a
-separate server stack and is not embedded into the desktop lifecycle.
+Define how the authorized Milestone 3 macOS shell is built and verified. The
+desktop uses Tauri 2, Rust, React, TypeScript, and Vite. Python 3.12+ FastAPI
+remains a separately started server stack and is not embedded in the desktop
+lifecycle.
 
 ## Toolchain policy
 
-Approved foundation baseline:
+Milestone 3 baseline:
 
 - macOS 13 or newer with full Xcode; Apple Silicon is primary.
 - Node.js 24 with npm.
-- Current stable Rust during Milestone 1; Milestone 2 must add a
-  repository-controlled Rust toolchain file.
-- Tauri 2 CLI, React, TypeScript, and JavaScript API versions through lockfiles.
-- Python 3.12+; FastAPI dependencies arrive with the independent server.
+- Rust and Cargo dependencies are resolved by the committed Cargo lockfile.
+- Tauri 2, React, TypeScript, Vite, and npm dependencies are locked.
+- Python 3.12+ and FastAPI are resolved separately for the backend.
 
 Apple signing, hardened runtime, entitlements, notarization, update signatures,
-and disk-image packaging require a later release milestone. No app or DMG job
-is valid before source, identity, and artifact requirements exist.
+and disk-image packaging require a later release milestone. Milestone 3 builds
+the unsigned `.app` target only; it makes no release-distribution claim.
 
 ## Files
 
-- `docs/deployment/MACOS_TOOLCHAIN.md` records policy only.
+- `apps/macos-desktop/` contains the React/Vite client and Tauri/Rust shell.
 - `docs/architecture/SYSTEM_CONTEXT.md` separates desktop and server.
 - `docs/security/FOUNDATION.md` defines native capability constraints.
-- `.github/workflows/foundation.yml` intentionally has no Node, Rust, Tauri,
-  frontend, backend, app, or DMG build jobs.
-
-No toolchain pin, entitlement, icon, app metadata, package manifest, lockfile,
-or signing configuration is created in Milestone 1.
+- `package-lock.json` and `src-tauri/Cargo.lock` lock desktop dependencies.
+- Tauri capabilities permit only core window behavior and deep-link handling;
+  native commands expose bounded Keychain and validated OIDC launch operations.
+- `.github/workflows/foundation.yml` checks authorized frontend, backend, Rust,
+  and unsigned app builds but has no signing, notarization, DMG, or updater job.
 
 ## Commands
 
-Inventory commands for a future authorized setup:
+Inventory and validation commands:
 
 ```sh
 sw_vers
@@ -46,46 +45,41 @@ npm --version
 rustc --version
 cargo --version
 python3 --version
+make frontend-test
+make desktop-build
+make rust-test
 ```
 
-These commands report local state only. They do not establish the project's
-supported matrix. Do not run Tauri scaffolding, package initialization, app
-build, signing, notarization, or DMG creation under Milestone 1.
+Inventory commands report local state only. Validation commands type-check and
+test the client, build the Vite and unsigned `.app` targets, and run Rust
+formatting, Clippy, and unit tests. Do not sign, notarize, package a DMG, or
+configure an updater.
 
 ## Tests
 
-Current:
-
-- Markdown and required-section validation.
-- Review that no premature desktop, server, app, or packaging job exists.
-
-Future:
-
 - Vite unit and production-build tests.
 - Rust formatting, linting, unit, and capability tests.
-- Tauri integration tests on the oldest supported macOS version.
 - FastAPI tests on server runners independent from macOS desktop jobs.
-- Entitlement, hardened-runtime, signature, notarization, and update checks.
-- Clean-machine installation and uninstall tests.
+- Callback parsing, exact API-envelope, reconnect, Keychain boundary, and OIDC
+  URL-validation tests.
+- Signing, notarization, DMG, update, and clean-install tests remain excluded.
 
 ## Results
 
-- macOS inventory and foundation toolchain doctor: PASS.
-- Vite/Tauri, Rust, and FastAPI project checks: NOT APPLICABLE to Milestone 1;
-  no product source or manifests exist.
-- Signing, notarization, and DMG validation: NOT APPLICABLE to Milestone 1;
-  packaging is not authorized.
+- Focused Vite/TypeScript and Rust suites and unsigned app build: PASS during
+  implementation.
+- Final full Milestone 3 acceptance: PENDING.
+- Signing, notarization, DMG, and updater validation: NOT AUTHORIZED.
 
 ## Known issues
 
-- Exact minimum macOS support remains subject to the first compiled Tauri test;
-  Apple Silicon is primary and Intel is best-effort.
-- Exact Tauri, React, Vite, FastAPI, Pydantic, and SQLAlchemy versions remain
-  unselected until their package manifests are created.
+- The configured minimum is macOS 13; broader architecture validation remains
+  pending.
 - Apple Developer team, certificate custody, and notarization credentials are
   not assigned.
 - Universal binary and cross-architecture test strategy is open.
-- Update framework, rollback behavior, and release channel policy are open.
+- Update framework, rollback behavior, and release channels are outside
+  Milestone 3.
 
 ## Security
 
@@ -102,17 +96,16 @@ availability controls; desktop termination must not affect it.
 
 ## Acceptance
 
-- Planned tools and deferred decisions are distinguished.
-- No build or packaging claim is made without source.
+- Implemented tools and deferred release work are distinguished.
+- The unsigned `.app` build is not represented as distributable packaging.
 - Server independence is explicit.
 - Signing and native capability risks are recorded.
-- Foundation toolchain evidence is recorded without claiming a product build.
+- Focused build evidence is not represented as final acceptance.
 
-This document is not authorization to scaffold the toolchain.
+This document does not authorize release packaging.
 
 ## Next milestone
 
-Following an explicit Milestone 2 gate, approve a version matrix and create the
-smallest source skeletons with lockfiles and executable checks. Add CI jobs only
-alongside the source they validate. Keep signing, notarization, and DMG work
-deferred until a separately approved release milestone.
+Milestone 4 is not authorized. Keep signing, notarization, DMG, updater, broker,
+market, strategy, order, execution, risk, reconciliation, and AI work deferred
+until separately approved.

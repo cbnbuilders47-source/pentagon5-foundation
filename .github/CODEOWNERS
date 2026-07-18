@@ -5,6 +5,14 @@
 /.github/ @pentagon5-foundation/maintainers
 /docs/security/ @pentagon5-foundation/maintainers
 /.pre-commit-config.yaml @pentagon5-foundation/maintainers
+/apps/macos-desktop/ @pentagon5-foundation/maintainers
+/backend/ @pentagon5-foundation/maintainers
 /infrastructure/database/ @pentagon5-foundation/maintainers
+/infrastructure/docker/ @pentagon5-foundation/maintainers
+/infrastructure/monitoring/ @pentagon5-foundation/maintainers
+/packages/api-client/ @pentagon5-foundation/maintainers
+/packages/auth-contracts/ @pentagon5-foundation/maintainers
 /packages/event-contracts/ @pentagon5-foundation/maintainers
 /packages/shared-types/ @pentagon5-foundation/maintainers
+/services/api-gateway/ @pentagon5-foundation/maintainers
+/services/authentication/ @pentagon5-foundation/maintainers

@@ -21,6 +21,7 @@ require_command() {
 require_command docker
 require_command make
 require_command curl
+require_command openssl
 require_command node
 require_command npm
 require_command rustc

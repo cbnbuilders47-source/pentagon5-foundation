@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.pentagon5.dev/auth/v1/auth.schema.json",
+  "title": "PENTAGON5 Authentication API Contracts",
+  "type": "object",
+  "$defs": {
+    "loginStartRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["device_key", "platform"],
+      "properties": {
+        "device_key": {"type": "string", "minLength": 8, "maxLength": 200},
+        "platform": {
+          "enum": ["macos", "windows", "linux", "ios", "android", "web"]
+        }
+      }
+    },
+    "loginStartResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorization_url"],
+      "properties": {
+        "authorization_url": {"type": "string", "format": "uri"}
+      }
+    },
+    "loginGrantExchangeRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code"],
+      "properties": {
+        "code": {"type": "string", "minLength": 32, "maxLength": 512}
+      }
+    },
+    "loginGrantExchangeResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["session_token", "session"],
+      "properties": {
+        "session_token": {"type": "string", "minLength": 32},
+        "session": {"$ref": "#/$defs/session"}
+      }
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "user_id",
+        "session_id",
+        "email",
+        "display_name",
+        "roles",
+        "permissions",
+        "expires_at"
+      ],
+      "properties": {
+        "user_id": {
+          "$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"
+        },
+        "session_id": {
+          "$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"
+        },
+        "email": {"type": "string", "format": "email", "maxLength": 320},
+        "display_name": {"type": "string", "minLength": 1, "maxLength": 120},
+        "roles": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 80},
+          "uniqueItems": true
+        },
+        "permissions": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1, "maxLength": 120},
+          "uniqueItems": true
+        },
+        "expires_at": {
+          "$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"
+        }
+      }
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "platform", "last_seen_at", "revoked_at"],
+      "properties": {
+        "id": {
+          "$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"
+        },
+        "platform": {"type": "string"},
+        "last_seen_at": {
+          "oneOf": [
+            {
+              "$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"
+            },
+            {"type": "null"}
+          ]
+        },
+        "revoked_at": {
+          "oneOf": [
+            {
+              "$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"
+            },
+            {"type": "null"}
+          ]
+        }
+      }
+    },
+    "websocketTicketRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["channel"],
+      "properties": {
+        "channel": {"enum": ["system.health", "session.events"]}
+      }
+    },
+    "websocketTicketResponse": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ticket", "channel", "expires_in_seconds"],
+      "properties": {
+        "ticket": {"type": "string", "minLength": 32},
+        "channel": {"enum": ["system.health", "session.events"]},
+        "expires_in_seconds": {"type": "integer", "minimum": 1, "maximum": 60}
+      }
+    },
+    "error": {
+      "$ref": "https://pentagon5.dev/schemas/events/message/1.0.0#/$defs/Error"
+    }
+  }
+}

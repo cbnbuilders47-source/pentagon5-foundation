@@ -21,6 +21,14 @@ INSERT INTO identity.permissions (id, code, description)
 VALUES ('018f0000-0000-7000-8000-000000000003', 'workspace.manage', 'Manage a workspace')
 ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO identity.permissions (id, code, description)
+VALUES (
+    '018f0000-0000-7000-8000-000000000004',
+    'system.health.read',
+    'Read system health over authenticated transports'
+)
+ON CONFLICT (id) DO NOTHING;
+
 INSERT INTO identity.user_roles (user_id, role_id)
 VALUES (
     '018f0000-0000-7000-8000-000000000001',
@@ -32,6 +40,13 @@ INSERT INTO identity.role_permissions (role_id, permission_id)
 VALUES (
     '018f0000-0000-7000-8000-000000000002',
     '018f0000-0000-7000-8000-000000000003'
+)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO identity.role_permissions (role_id, permission_id)
+VALUES (
+    '018f0000-0000-7000-8000-000000000002',
+    '018f0000-0000-7000-8000-000000000004'
 )
 ON CONFLICT DO NOTHING;
 

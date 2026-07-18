@@ -1,0 +1,22 @@
+[package]
+name = "pentagon5-desktop"
+version = "0.1.0"
+description = "Pentagon 5 macOS desktop shell"
+edition = "2024"
+rust-version = "1.88"
+
+[lib]
+name = "pentagon5_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = "2.6.3"
+
+[dependencies]
+keyring = "4.1.4"
+open = "5.3.6"
+serde_json = "1.0.150"
+tauri = "2.11.2"
+tauri-plugin-deep-link = "2.4.9"
+url = "2.5.8"
+uuid = { version = "1.24.0", features = ["v4"] }

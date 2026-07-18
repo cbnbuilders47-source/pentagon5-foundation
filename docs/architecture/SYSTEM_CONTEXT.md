@@ -2,38 +2,40 @@
 
 ## Objectives
 
-Define the product boundary before application code exists. The planned product is
-a macOS desktop client backed by an independently deployable server. The desktop
-must remain a client of stable server contracts; it must not become the server's
-process supervisor or sole deployment path.
+Define the authorized Milestone 3 boundary: a minimal macOS desktop client and
+independently operated authentication and API gateway processes. The desktop is
+a client of stable server contracts, not a process supervisor or deployment
+path.
 
 No previous product code was reused. Milestone 1 established the repository
-foundation; Milestone 2 defines shared structural contracts and the
-authoritative PostgreSQL model without implementing a product runtime.
+foundation; Milestone 2 defines shared contracts and the authoritative
+PostgreSQL model; Milestone 3 adds the bounded identity runtime.
 
 ## System boundary
 
 ```mermaid
 flowchart LR
     Person[Operator]
-    Desktop[Future macOS desktop<br/>Tauri 2 + Rust + React + TypeScript + Vite]
-    API[Future independent server<br/>Python 3.12+ + FastAPI]
-    Data[(PostgreSQL authoritative data<br/>structural foundation)]
-    External[Approved external services]
+    Desktop[macOS desktop shell<br/>Tauri 2 + Rust + React + TypeScript + Vite]
+    Gateway[Independent API gateway<br/>FastAPI factory]
+    Auth[Independent authentication<br/>FastAPI factory]
+    Data[(PostgreSQL<br/>identity and structural data)]
+    OIDC[Configured OIDC provider]
 
     Person --> Desktop
-    Person --> API
-    Desktop -->|versioned HTTPS API| API
-    API --> Data
-    API --> External
+    Desktop -->|versioned HTTP and WS API| Gateway
+    Person --> OIDC
+    Gateway --> Data
+    Auth --> Data
+    Gateway --> OIDC
+    Auth --> OIDC
 ```
 
-The future React and TypeScript application is built by Vite. Tauri 2 and Rust
-supply the macOS native shell and narrowly scoped native capabilities. Python
-3.12+ and FastAPI supply the independent network API, business orchestration,
-authentication enforcement, and health endpoints. These choices describe the
-intended future runtime direction; no runtime implementation is authorized in
-Milestone 2.
+React and TypeScript are built by Vite. Tauri 2 and Rust provide a narrow native
+shell for Keychain token/device storage, validated browser login launch, and a
+fixed deep-link callback. Python 3.12+ and FastAPI provide separate
+authentication and gateway factories with health, observability, OIDC, session,
+device, RBAC, and ticketed WebSocket behavior.
 
 ## Files
 
@@ -42,10 +44,15 @@ Milestone 2.
   Python quality policy.
 - `docker-compose.yml` and `infrastructure/` define local dependencies,
   observability, health checks, and deployment ownership boundaries.
-- `apps/` and `services/` remain README-only ownership boundaries.
+- `apps/macos-desktop/` contains the minimal client; other app boundaries remain
+  README-only.
+- `backend/`, `services/authentication/`, and `services/api-gateway/` contain the
+  authorized backend runtime.
 - `packages/shared-types/` and `packages/event-contracts/` own versioned
   language-neutral contracts.
 - `infrastructure/database/` owns PostgreSQL metadata and migrations.
+- `packages/auth-contracts/` and `packages/api-client/` own the auth contract and
+  constrained client.
 - `docs/architecture/SYSTEM_CONTEXT.md` owns external actors and boundaries.
 - `docs/architecture/REPOSITORY.md` owns the planned repository layout.
 - `docs/security/FOUNDATION.md` owns the initial threat and control baseline.
@@ -53,9 +60,10 @@ Milestone 2.
 - `docs/testing/STRATEGY.md` owns the future test pyramid and evidence rules.
 - `docs/operations/MILESTONE_1.md` is the milestone evidence and gate record.
 - `docs/operations/MILESTONE_2.md` records contract/database evidence.
+- `docs/operations/MILESTONE_3.md` records runtime evidence and the pending gate.
 
-There is no application, backend service, frontend, Rust, packaging, app, or
-DMG source.
+There is no broker, market-data, strategy, order, execution, risk,
+reconciliation, AI, signing, notarization, DMG, or updater runtime.
 
 ## Commands
 
@@ -76,24 +84,21 @@ health status, and tears the stack down after the check.
 - Human architecture review for boundary clarity.
 - Versioned contract validation and compatibility tests.
 - PostgreSQL migration and constraint tests.
-- Future server deployment test with no desktop process present.
+- Independent server factory and lifecycle tests with no desktop process.
 
 ## Results
 
-- Architecture and repository contract review: PASS.
-- Desktop/server contract and independent server deployment tests: NOT
-  APPLICABLE to Milestone 1; no product source or API contract is authorized.
-- Dependency configuration, health, teardown, and restart recovery: PASS.
+- Focused architecture, runtime contract, and independent factory tests: PASS.
+- Final full Milestone 3 acceptance: PENDING.
 
-No runtime success is inferred from static documentation validation.
+Focused results do not imply full acceptance.
 
 ## Known issues
 
-- Authentication provider, data store, queue, and external integrations are not
-  selected.
-- Future service endpoint topology remains unspecified; Milestone 2 defines
-  message schemas only.
-- Offline desktop behavior and update delivery are undecided.
+- A production OIDC provider registration remains a deployment input.
+- The gateway currently composes the auth surface in-process; network service
+  identity is deferred.
+- Offline desktop behavior is not implemented; update delivery is excluded.
 - Deployment topology and availability targets remain open.
 
 ## Security
@@ -110,17 +115,18 @@ failing the desktop must not stop the server or invalidate server availability.
 
 ## Acceptance
 
-- The future Tauri 2/Rust/React/TypeScript/Vite and Python 3.12+/FastAPI
-  responsibilities are explicit.
+- Tauri/Rust/React/TypeScript/Vite and Python/FastAPI responsibilities are
+  explicit.
 - The desktop and server lifecycles are independent.
 - Trust boundaries and untrusted-client assumptions are identified.
-- Out-of-scope runtime evidence is marked NOT APPLICABLE.
-- No application implementation is represented as complete.
+- Out-of-scope runtimes remain explicitly excluded.
+- Focused test success is not represented as final acceptance.
 
-Milestone 2 authorization is limited to contracts and database structure.
+Milestone 3 authorization is limited to identity, transport, observability, and
+the minimal desktop shell.
 
 ## Next milestone
 
-Milestone 3 remains unauthorized. Authentication, service runtimes,
-Tauri/React UI, broker integration, market feeds, strategies, and order
-placement require a separate gate.
+Milestone 4 is not authorized. Broker, market, strategy, order, execution, risk,
+reconciliation, AI, signing, notarization, DMG, and updater work remain
+excluded.

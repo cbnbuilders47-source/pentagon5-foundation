@@ -2,16 +2,18 @@
 
 ## Objectives
 
-Establish security invariants before runtime code is authorized. Milestone 1
-protects repository integrity; Milestone 2 adds structural contract and
-database controls. Neither milestone claims product security.
+Record security invariants through the authorized Milestone 3 identity runtime.
+Milestone 1 protects repository integrity, Milestone 2 adds contract/database
+controls, and Milestone 3 implements bounded authentication and native-client
+controls without claiming complete product security.
 
 No prior implementation or security configuration was reused.
 
 ## Threat model baseline
 
-Primary assets are future user identity, authorization state, service data,
-API credentials, signing identities, update metadata, and build provenance.
+Primary assets are user identity, authorization state, opaque sessions, OIDC
+client credentials, service data, and build provenance. Signing identities and
+update metadata remain future assets outside Milestone 3.
 Likely threat actors include unauthenticated network clients, compromised user
 devices, malicious dependencies, leaked credentials, and contributors abusing
 CI permissions.
@@ -36,6 +38,13 @@ Initial abuse cases:
   validated and branch protection is configured.
 - `.pre-commit-config.yaml` detects private keys and validates tracked content.
 - `uv.lock` locks contract, migration, database-driver, and validation tooling.
+- `backend/` enforces strict settings, secret-file indirection, safe logging,
+  request bounds, exact CORS, metrics, and optional tracing.
+- `services/authentication/` implements OIDC PKCE, one-time grants, opaque
+  fingerprinted sessions, devices, ticketed WebSockets, and global RBAC.
+- `packages/auth-contracts/` keeps auth schemas separate from domain contracts.
+- `apps/macos-desktop/src-tauri/` limits native access to Keychain and validated
+  OIDC browser launch commands.
 - Contract fixtures and database seeds are synthetic and development-only.
 
 ## Commands
@@ -66,10 +75,13 @@ tokens into command lines, checked-in configuration, or shell history.
   idempotency metadata, and invalid states.
 - Database constraints preventing invalid financial and lifecycle state.
 - Append-only audit mutation tests.
+- OIDC state, nonce, PKCE, issuer, audience, expiry, replay, and one-time grant
+  tests.
+- Default-deny RBAC, keyed fingerprints, exact CORS, body/timeout limits,
+  WebSocket tickets, safe errors/logging, and Tauri capability tests.
 
-Future runtime security tests must cover authentication, object-level
-authorization, rate limiting, input validation, CORS, CSRF where applicable,
-Tauri capability allowlists, secure update verification, and audit logging.
+Object-level authorization for future domain resources, rate limiting, secure
+updates, and release signing remain outside the current surface.
 
 ## Results
 
@@ -77,10 +89,14 @@ Tauri capability allowlists, secure update verification, and audit logging.
 - Local Trivy and OSV scans: PASS with no findings.
 - Hosted security workflow: NOT RUN.
 - Local SPDX SBOM generation: PASS.
-- Runtime threat and macOS signing/notarization tests: NOT APPLICABLE to
-  Milestone 1; no product runtime or artifact exists.
 - Milestone 2 detect-secrets, Gitleaks, Trivy, OSV, workflow lint, and SPDX
   generation: PASS locally with no findings.
+- Focused Milestone 3 runtime, auth contract, client, and Rust security suites:
+  PASS.
+- Milestone 3 Gitleaks, Trivy, OSV-Scanner, detect-secrets, private-key,
+  npm-audit, and Tauri capability checks: PASS.
+- Final full Milestone 3 acceptance: PASS.
+- Signing, notarization, DMG, and updater checks: NOT AUTHORIZED.
 
 Scanner configuration is evidence of intent, not evidence that a scan passed.
 
@@ -90,24 +106,25 @@ Scanner configuration is evidence of intent, not evidence that a scan passed.
 - GitHub action references are release tags, not immutable commit SHAs.
 - Root `SECURITY.md` defines reporting and response policy; hosting contacts
   still require verification.
-- Contract and database tooling is locked, but future service dependencies do
-  not yet exist.
 - Signing certificate custody, notarization, update signing, and incident
   response ownership remain undecided.
-- Vulnerability exceptions have no approved process; suppressions are therefore
-  forbidden in Milestone 1.
+- Tauri 2 currently locks Linux-only GTK3 crates and unmaintained build crates
+  that OSV reports for every target. The macOS dependency tree excludes the
+  GTK3 and `proc-macro-error` crates. Time-bounded, reasoned exceptions in
+  `apps/macos-desktop/src-tauri/osv-scanner.toml` expire on 2026-10-18; an
+  upstream Tauri update must replace them before renewal.
 
 ## Security
 
 Mandatory invariants:
 
-1. The FastAPI server will treat all desktop input as untrusted and enforce
+1. FastAPI treats all desktop input as untrusted and enforces
    authentication and authorization server-side.
-2. The server will run independently of Vite/Tauri; desktop lifecycle events
+2. Backend services run independently of Vite/Tauri; desktop lifecycle events
    cannot stop, restart, or own the server.
 3. Vite build-time variables are public unless proven otherwise. Secrets never
    enter a desktop bundle.
-4. Tauri capabilities will be deny-by-default, with no generic shell execution
+4. Tauri capabilities are deny-by-default, with no generic shell execution
    and no unrestricted filesystem access.
 5. CI remains read-only by default. Any future write permission needs a
    job-level justification and protected event context.
@@ -115,22 +132,26 @@ Mandatory invariants:
    ignored exit status, or unconditional success is permitted for gates.
 7. SBOMs describe the scanned revision and are not a substitute for provenance,
    signing, or vulnerability assessment.
+8. The native callback contains only a short-lived one-time grant. The desktop
+   stores the exchanged opaque token and device key only in macOS Keychain.
+9. PostgreSQL stores keyed HMAC fingerprints, not plaintext sessions, states,
+   grant codes, device keys, or WebSocket tickets. Transient payloads are
+   authenticated-encrypted.
 
 ## Acceptance
 
 - Secret, vulnerability, dependency, and SBOM jobs are defined.
 - Permissions are read-only by default and elevated only for dependency review.
 - Checkout credentials are not persisted.
-- Runtime and artifact claims remain NOT RUN or BLOCKED.
-- Desktop/server isolation and future native-shell restrictions are explicit.
-- No secret, exception, or vulnerability suppression is introduced.
+- Focused runtime evidence and full acceptance evidence are distinguished.
+- Desktop/server isolation and native-shell restrictions are explicit.
+- Scanner exceptions are explicit, target-justified, and time-bounded.
 
-Milestone 2 security acceptance remains structural; it does not authorize a
-network service, authentication implementation, or trading behavior.
+Milestone 3 security scope authorizes identity and transport controls only; it
+does not authorize trading behavior or release distribution.
 
 ## Next milestone
 
-Milestone 3 remains unauthorized. Before runtime work, separately approve API
-exposure, secret storage, authentication behavior, and runtime data
-classification. Add Vite/Tauri and FastAPI security tests only when their scope
-and source are authorized.
+Milestone 4 is not authorized. Broker, market, strategy, order, execution, risk,
+reconciliation, AI, signing, notarization, DMG, and updater work require a
+separate security scope.

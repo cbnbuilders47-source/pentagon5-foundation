@@ -2,10 +2,10 @@
 
 ## Objectives
 
-Define honest, layered evidence before product source exists. A configured test
-is not a passed test, skipped work is not success, and static checks cannot
-prove runtime behavior. Every gate must distinguish PASS, FAIL, NOT RUN, and
-BLOCKED.
+Define honest, layered evidence for the foundation and authorized Milestone 3
+runtime. A configured test is not a passed test, skipped work is not success,
+and focused suites do not prove full acceptance. Every gate must distinguish
+PASS, FAIL, NOT RUN, and BLOCKED.
 
 No tests or implementation were reused from previous code.
 
@@ -31,6 +31,8 @@ not use `continue-on-error` or equivalent suppression.
   changes, manifests, and SBOM generation.
 - `docs/operations/MILESTONE_1.md` is the execution evidence record.
 - `docs/operations/MILESTONE_2.md` records contract and database evidence.
+- `docs/operations/MILESTONE_3.md` records focused runtime evidence and the
+  pending final gate.
 
 ## Commands
 
@@ -38,7 +40,11 @@ Current local checks:
 
 ```sh
 make contracts-check
+make runtime-test
 make database-test
+make frontend-test
+make desktop-build
+make rust-test
 make verify
 make acceptance
 ```
@@ -51,8 +57,7 @@ docker compose -f docker-compose.yml up --detach --wait --wait-timeout 120
 docker compose -f docker-compose.yml ps
 ```
 
-Future stack-specific commands must be added only with their manifests, locked
-dependencies, source, and assertions.
+These commands validate only checked-in source and locked dependencies.
 
 ## Tests
 
@@ -77,22 +82,26 @@ dependencies, source, and assertions.
 5. UTC timestamp normalization and development-seed idempotence.
 6. Repository ownership, security scans, and Docker restart recovery.
 
-### Future Python 3.12+ FastAPI server
+### Milestone 3 Python 3.12+ FastAPI runtime
 
-- FastAPI unit tests for business and authorization rules.
-- API schema and backward-compatibility tests.
+- Independent authentication and gateway factory tests.
+- OIDC PKCE, provider validation, replay, grant, session, device, and global
+  RBAC tests.
+- Strict configuration, secret-file, CORS, body, timeout, safe-log, UUIDv7,
+  health, error-envelope, and observability tests.
 - Integration tests against disposable dependencies.
-- Health, readiness, migration, shutdown, and recovery tests.
-- Deployment test proving the server continues with no desktop running.
+- Migration `0002`, readiness, Compose health, lifecycle, and restart tests.
 
-### Future Tauri 2/Rust/React/TypeScript/Vite desktop
+### Milestone 3 Tauri 2/Rust/React/TypeScript/Vite desktop
 
-- Vite component and state tests.
-- Browser-level tests against a controlled API.
-- Tauri command schema, permission, and native integration tests.
-- macOS accessibility, update, install, and failure-mode tests.
+- Type checks, API-client envelope tests, callback parsing, reconnect behavior,
+  React state tests, and production builds.
+- Rust formatting, Clippy, URL validation, Keychain command-boundary tests, and
+  unsigned `.app` build.
+- Accessibility, signing, notarization, DMG, updater, and release tests are not
+  authorized.
 
-### Future end to end
+### Milestone 3 lifecycle
 
 - Contract-driven flows across separately started server and desktop processes.
 - Network interruption, expired identity, denied authorization, and server
@@ -106,11 +115,12 @@ dependencies, source, and assertions.
 - Milestone 1 hosted workflows: NOT RUN.
 - Compose validation, health, teardown, and restart recovery: PASS.
 - Foundation contract tests: PASS, four tests.
-- Server, desktop, end-to-end, and packaging tests: NOT APPLICABLE to
-  Milestone 1; their source and artifacts are not authorized.
 - Milestone 2 contract tests: PASS, 20 tests.
 - Milestone 2 migration and database tests: PASS, 9 tests.
 - Milestone 2 complete local acceptance and restart recovery: PASS.
+- Focused Milestone 3 Python, auth contract, TypeScript, and Rust suites: PASS
+  during implementation.
+- Final full Milestone 3 `make acceptance`: PENDING.
 
 ## Known issues
 
@@ -120,6 +130,8 @@ dependencies, source, and assertions.
   security feature availability.
 - Dependency review can require GitHub Dependency Graph availability.
 - Runtime performance, resilience, and accessibility targets are undefined.
+- A live production OIDC provider and release-distribution tests are outside the
+  focused suites.
 
 ## Security
 
@@ -135,17 +147,17 @@ retained briefly as a CI artifact and must identify the tested revision.
 
 - Evidence states are unambiguous.
 - Current CI covers every artifact that actually exists.
-- Runtime tests are deferred rather than simulated.
-- Future server independence has a named acceptance test.
-- No backend, frontend, Rust, app, or DMG test job exists before source.
-- Contract and database tests execute without creating a service runtime.
+- Authorized runtime behavior has executable tests.
+- Server independence has a named factory and lifecycle test.
+- No broker, market, strategy, order, execution, risk, reconciliation, AI,
+  signing, notarization, DMG, or updater test claims exist.
+- Contract and database tests remain separable from service startup.
 - Commands and results are traceable to a revision when execution occurs.
 
-Milestone 1 acceptance cannot be used to waive the Milestone 2 authorization
-gate.
+Milestone 1 or 2 acceptance cannot be used to waive the Milestone 3 gate.
 
 ## Next milestone
 
-Milestone 3 remains unauthorized. Future service or desktop tests require a
-separate scope decision and must preserve independent server lifecycle
-validation.
+Milestone 4 is not authorized. Any broader service, trading, packaging, or
+updater tests require a separate scope decision and must preserve independent
+backend lifecycle validation.

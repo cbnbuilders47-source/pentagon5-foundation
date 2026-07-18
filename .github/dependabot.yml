@@ -36,3 +36,43 @@ updates:
       python-tooling:
         patterns:
           - "*"
+
+  - package-ecosystem: npm
+    directory: /packages/api-client
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "build(deps)"
+
+  - package-ecosystem: npm
+    directory: /apps/macos-desktop
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:15"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: "build(deps)"
+
+  - package-ecosystem: cargo
+    directory: /apps/macos-desktop/src-tauri
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:30"
+      timezone: Etc/UTC
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - security
+    commit-message:
+      prefix: "build(deps)"

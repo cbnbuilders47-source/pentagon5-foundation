@@ -108,6 +108,99 @@ services:
       start_period: 15s
     restart: unless-stopped
 
+  authentication:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/backend/Dockerfile
+    command:
+      - pentagon5_auth.app:create_app
+      - --factory
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    environment: &backend-environment
+      P5_ENVIRONMENT: development
+      P5_SERVICE_NAME: pentagon5-authentication
+      P5_DATABASE_URL: >-
+        postgresql+psycopg://${POSTGRES_USER:-pentagon5}:${POSTGRES_PASSWORD:-pentagon5_dev_only}@postgres:5432/${POSTGRES_DB:-pentagon5}
+      P5_LOG_LEVEL: ${P5_LOG_LEVEL:-INFO}
+      P5_OTLP_ENDPOINT: http://otel-collector:4318/v1/traces
+      P5_CORS_ORIGINS: ${P5_CORS_ORIGINS:-http://127.0.0.1:1420,http://tauri.localhost}
+      P5_MAX_BODY_BYTES: ${P5_MAX_BODY_BYTES:-1048576}
+      P5_REQUEST_TIMEOUT_SECONDS: ${P5_REQUEST_TIMEOUT_SECONDS:-15}
+      P5_OIDC_ISSUER: ${P5_OIDC_ISSUER:-http://host.docker.internal:8081}
+      P5_OIDC_CLIENT_ID: ${P5_OIDC_CLIENT_ID:-pentagon5-desktop-development}
+      P5_OIDC_CLIENT_SECRET_FILE: /run/secrets/oidc_client_secret
+      P5_OIDC_REDIRECT_URI: >-
+        ${P5_OIDC_REDIRECT_URI:-http://127.0.0.1:8000/v1/auth/oidc/callback}
+      P5_DESKTOP_CALLBACK_URI: pentagon5://auth/callback
+      P5_SESSION_HMAC_KEY_FILE: /run/secrets/session_hmac_key
+      P5_SESSION_TTL_SECONDS: ${P5_SESSION_TTL_SECONDS:-28800}
+      P5_OIDC_FLOW_TTL_SECONDS: ${P5_OIDC_FLOW_TTL_SECONDS:-300}
+      P5_LOGIN_GRANT_TTL_SECONDS: ${P5_LOGIN_GRANT_TTL_SECONDS:-60}
+      P5_WS_TICKET_TTL_SECONDS: ${P5_WS_TICKET_TTL_SECONDS:-30}
+      P5_WS_MAX_FRAME_BYTES: ${P5_WS_MAX_FRAME_BYTES:-16384}
+      P5_WS_MAX_SUBSCRIPTIONS: ${P5_WS_MAX_SUBSCRIPTIONS:-1}
+      P5_WEB_COOKIE_MODE: "false"
+    volumes:
+      - ./.secrets:/run/secrets:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/v1/system/health/ready', timeout=3)
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/backend/Dockerfile
+    command:
+      - pentagon5_gateway.app:create_app
+      - --factory
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    environment:
+      <<: *backend-environment
+      P5_SERVICE_NAME: pentagon5-api-gateway
+    volumes:
+      - ./.secrets:/run/secrets:ro
+    ports:
+      - "127.0.0.1:${P5_GATEWAY_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      otel-collector:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/v1/system/health/ready', timeout=3)
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    restart: unless-stopped
+
 volumes:
   postgres-data:
   redis-data:

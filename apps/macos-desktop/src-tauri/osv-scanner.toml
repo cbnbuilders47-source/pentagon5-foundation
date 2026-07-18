@@ -1,0 +1,87 @@
+# Time-bounded exceptions for Tauri 2 transitive dependencies.
+# Re-evaluate on every Tauri update and no later than the dates below.
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0413"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0416"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0412"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0418"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0411"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0417"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0414"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0429"
+ignoreUntil = 2026-10-18
+reason = "glib is Linux-only in Tauri and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0415"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0420"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0419"
+ignoreUntil = 2026-10-18
+reason = "GTK3 dependency is Linux-only and absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2024-0370"
+ignoreUntil = 2026-10-18
+reason = "Unmaintained build dependency is absent from the supported macOS target."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0081"
+ignoreUntil = 2026-10-18
+reason = "Unmaintained, not vulnerable; transitive Tauri build dependency."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0075"
+ignoreUntil = 2026-10-18
+reason = "Unmaintained, not vulnerable; transitive Tauri build dependency."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0080"
+ignoreUntil = 2026-10-18
+reason = "Unmaintained, not vulnerable; transitive Tauri build dependency."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0100"
+ignoreUntil = 2026-10-18
+reason = "Unmaintained, not vulnerable; transitive Tauri build dependency."
+
+[[IgnoredVulns]]
+id = "RUSTSEC-2025-0098"
+ignoreUntil = 2026-10-18
+reason = "Unmaintained, not vulnerable; transitive Tauri build dependency."

@@ -1,0 +1,41 @@
+# Operating systems
+.DS_Store
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# JavaScript
+node_modules/
+.next/
+coverage/
+
+# Rust, Tauri, and Xcode
+target/
+src-tauri/target/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Logs and temporary files
+*.log
+tmp/
+temp/

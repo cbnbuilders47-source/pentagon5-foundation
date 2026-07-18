@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pentagon5-foundation"
 version = "0.1.0"
-description = "Milestone 1 repository foundation only"
+description = "PENTAGON5 shared contracts and PostgreSQL foundation"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
@@ -17,7 +17,16 @@ quality = [
   "pre-commit>=4.0",
   "pytest>=8.0",
   "ruff>=0.5",
+  "types-jsonschema>=4.23",
   "yamllint>=1.35",
+]
+contracts = [
+  "jsonschema[format]>=4.23",
+]
+database = [
+  "alembic>=1.14",
+  "psycopg[binary]>=3.2",
+  "sqlalchemy>=2.0",
 ]
 
 [tool.setuptools]
@@ -33,6 +42,7 @@ select = ["E", "F", "I", "UP"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
+explicit_package_bases = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

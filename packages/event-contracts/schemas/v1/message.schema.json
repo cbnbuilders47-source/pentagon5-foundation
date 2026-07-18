@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pentagon5.dev/schemas/events/message/1.0.0",
+  "title": "Pentagon5 API and event messages",
+  "oneOf": [
+    {"$ref": "#/$defs/Command"},
+    {"$ref": "#/$defs/Query"},
+    {"$ref": "#/$defs/Response"},
+    {"$ref": "#/$defs/Error"},
+    {"$ref": "#/$defs/DomainEvent"},
+    {"$ref": "#/$defs/Health"},
+    {"$ref": "#/$defs/WebSocket"},
+    {"$ref": "#/$defs/Audit"}
+  ],
+  "$defs": {
+    "MessageMetadata": {
+      "type": "object",
+      "required": ["correlationId"],
+      "properties": {
+        "correlationId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "causationId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"}
+      },
+      "additionalProperties": false
+    },
+    "BaseMessage": {
+      "type": "object",
+      "required": ["schemaVersion", "messageId", "category", "occurredAt", "metadata"],
+      "properties": {
+        "schemaVersion": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/SchemaVersion"},
+        "messageId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "category": {"type": "string"},
+        "occurredAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"},
+        "metadata": {"$ref": "#/$defs/MessageMetadata"}
+      }
+    },
+    "PlaceOrder": {
+      "type": "object",
+      "required": ["commandType", "clientOrderId", "instrumentId", "side", "orderType", "quantity", "idempotencyKey"],
+      "properties": {
+        "commandType": {"const": "place_order"},
+        "clientOrderId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "instrumentId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "side": {"enum": ["buy", "sell"]},
+        "orderType": {"enum": ["market", "limit", "stop", "stop_limit"]},
+        "quantity": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+        "limitPrice": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+        "idempotencyKey": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/IdempotencyKey"}
+      },
+      "additionalProperties": false
+    },
+    "CancelOrder": {
+      "type": "object",
+      "required": ["commandType", "orderId", "idempotencyKey"],
+      "properties": {
+        "commandType": {"const": "cancel_order"},
+        "orderId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "idempotencyKey": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/IdempotencyKey"}
+      },
+      "additionalProperties": false
+    },
+    "ClosePosition": {
+      "type": "object",
+      "required": ["commandType", "positionId", "quantity", "idempotencyKey"],
+      "properties": {
+        "commandType": {"const": "close_position"},
+        "positionId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "quantity": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+        "idempotencyKey": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/IdempotencyKey"}
+      },
+      "additionalProperties": false
+    },
+    "Command": {
+      "allOf": [
+        {"$ref": "#/$defs/BaseMessage"},
+        {
+          "type": "object",
+          "required": ["payload"],
+          "properties": {
+            "category": {"const": "command"},
+            "payload": {
+              "oneOf": [
+                {"$ref": "#/$defs/PlaceOrder"},
+                {"$ref": "#/$defs/CancelOrder"},
+                {"$ref": "#/$defs/ClosePosition"}
+              ]
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "QueryPayload": {
+      "type": "object",
+      "required": ["queryType"],
+      "properties": {
+        "queryType": {"enum": ["get", "list", "search"]},
+        "entityType": {"type": "string", "minLength": 1},
+        "entityId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "page": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/PageRequest"}
+      },
+      "additionalProperties": false
+    },
+    "Query": {
+      "allOf": [
+        {"$ref": "#/$defs/BaseMessage"},
+        {
+          "type": "object",
+          "required": ["payload"],
+          "properties": {
+            "category": {"const": "query"},
+            "payload": {"$ref": "#/$defs/QueryPayload"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ResponsePayload": {
+      "type": "object",
+      "required": ["status", "items"],
+      "properties": {
+        "status": {"const": "ok"},
+        "items": {"type": "array", "items": {"$ref": "#/$defs/DomainEntity"}},
+        "pageInfo": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/PageInfo"},
+        "idempotency": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/IdempotencyMetadata"}
+      },
+      "additionalProperties": false
+    },
+    "Response": {
+      "allOf": [
+        {"$ref": "#/$defs/BaseMessage"},
+        {
+          "type": "object",
+          "required": ["payload"],
+          "properties": {
+            "category": {"const": "response"},
+            "payload": {"$ref": "#/$defs/ResponsePayload"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ErrorPayload": {
+      "type": "object",
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"},
+        "message": {"type": "string", "minLength": 1},
+        "retryable": {"type": "boolean"},
+        "field": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": false
+    },
+    "Error": {
+      "allOf": [
+        {"$ref": "#/$defs/BaseMessage"},
+        {
+          "type": "object",
+          "required": ["payload"],
+          "properties": {
+            "category": {"const": "error"},
+            "payload": {"$ref": "#/$defs/ErrorPayload"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "DomainEventPayload": {
+      "type": "object",
+      "required": ["eventType", "aggregateType", "aggregateId", "sequence", "entity"],
+      "properties": {
+        "eventType": {"type": "string", "pattern": "^[a-z]+(?:\\.[a-z_]+)+$"},
+        "aggregateType": {"type": "string", "minLength": 1},
+        "aggregateId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "sequence": {"type": "integer", "minimum": 1},
+        "entity": {"$ref": "#/$defs/DomainEntity"}
+      },
+      "additionalProperties": false
+    },
+    "DomainEvent": {
+      "allOf": [
+        {"$ref": "#/$defs/BaseMessage"},
+        {
+          "type": "object",
+          "required": ["payload"],
+          "properties": {
+            "category": {"const": "domain_event"},
+            "payload": {"$ref": "#/$defs/DomainEventPayload"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Health": {
+      "allOf": [
+        {"$ref": "#/$defs/BaseMessage"},
+        {
+          "type": "object",
+          "required": ["payload"],
+          "properties": {
+            "category": {"const": "health"},
+            "payload": {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/SystemHealthEvent"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "WebSocketPayload": {
+      "type": "object",
+      "required": ["operation", "channel"],
+      "properties": {
+        "operation": {"enum": ["subscribe", "unsubscribe", "ack", "heartbeat"]},
+        "channel": {"type": "string", "minLength": 1},
+        "subscriptionId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"}
+      },
+      "additionalProperties": false
+    },
+    "WebSocket": {
+      "allOf": [
+        {"$ref": "#/$defs/BaseMessage"},
+        {
+          "type": "object",
+          "required": ["payload"],
+          "properties": {
+            "category": {"const": "websocket"},
+            "payload": {"$ref": "#/$defs/WebSocketPayload"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Audit": {
+      "allOf": [
+        {"$ref": "#/$defs/BaseMessage"},
+        {
+          "type": "object",
+          "required": ["payload"],
+          "properties": {
+            "category": {"const": "audit"},
+            "payload": {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/AuditEvent"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "DomainEntity": {
+      "oneOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/User"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Role"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Permission"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Device"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Session"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/UserPreference"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Theme"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/BackgroundAsset"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/SoundPreference"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/NotificationPreference"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/NotificationEvent"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/DashboardLayout"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Workspace"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/SystemHealthEvent"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/AuditEvent"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/TradingMode"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/ServerConnection"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Instrument"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Quote"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Signal"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Order"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Execution"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/Position"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/P&L"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/RiskState"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/BrokerHealth"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/MarketFeedHealth"},
+        {"$ref": "https://pentagon5.dev/schemas/shared/domain/1.0.0#/$defs/ReconciliationState"}
+      ]
+    }
+  }
+}

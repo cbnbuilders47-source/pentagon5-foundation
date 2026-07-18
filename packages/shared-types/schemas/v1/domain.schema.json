@@ -1,0 +1,476 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pentagon5.dev/schemas/shared/domain/1.0.0",
+  "title": "Pentagon5 v1 domain models",
+  "$defs": {
+    "User": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["email", "status"],
+          "properties": {
+            "email": {"type": "string", "format": "email"},
+            "status": {"enum": ["active", "disabled", "pending"]}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Role": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["name", "permissionIds"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "permissionIds": {
+              "type": "array",
+              "items": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+              "uniqueItems": true
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Permission": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["resource", "action"],
+          "properties": {
+            "resource": {"type": "string", "minLength": 1},
+            "action": {"type": "string", "minLength": 1}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Device": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["userId", "name", "platform", "trusted"],
+          "properties": {
+            "userId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "name": {"type": "string", "minLength": 1},
+            "platform": {"enum": ["macos", "web", "service"]},
+            "trusted": {"type": "boolean"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Session": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["userId", "deviceId", "createdAt", "expiresAt"],
+          "properties": {
+            "userId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "deviceId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "createdAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"},
+            "expiresAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "UserPreference": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["userId", "locale", "timezone"],
+          "properties": {
+            "userId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "locale": {"type": "string", "minLength": 2},
+            "timezone": {"type": "string", "minLength": 1}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Theme": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["name", "mode"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "mode": {"enum": ["light", "dark", "system"]}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "BackgroundAsset": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["kind", "uri", "sha256"],
+          "properties": {
+            "kind": {"enum": ["image", "video", "gradient"]},
+            "uri": {"type": "string", "format": "uri"},
+            "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "SoundPreference": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["userId", "enabled", "volume"],
+          "properties": {
+            "userId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "enabled": {"type": "boolean"},
+            "volume": {"type": "integer", "minimum": 0, "maximum": 100}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "NotificationPreference": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["userId", "channels"],
+          "properties": {
+            "userId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "channels": {
+              "type": "array",
+              "items": {"enum": ["desktop", "email", "push"]},
+              "uniqueItems": true
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "NotificationEvent": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["userId", "severity", "message", "occurredAt"],
+          "properties": {
+            "userId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "severity": {"enum": ["info", "warning", "critical"]},
+            "message": {"type": "string", "minLength": 1},
+            "occurredAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "DashboardLayout": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["userId", "widgetIds"],
+          "properties": {
+            "userId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "widgetIds": {
+              "type": "array",
+              "items": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"}
+            }
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Workspace": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["ownerId", "name"],
+          "properties": {
+            "ownerId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "name": {"type": "string", "minLength": 1}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "SystemHealthEvent": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["component", "status", "observedAt"],
+          "properties": {
+            "component": {"type": "string", "minLength": 1},
+            "status": {"enum": ["healthy", "degraded", "unavailable"]},
+            "observedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"},
+            "detail": {"type": "string"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "AuditEvent": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["action", "targetType", "targetId", "metadata"],
+          "properties": {
+            "action": {"type": "string", "minLength": 1},
+            "targetType": {"type": "string", "minLength": 1},
+            "targetId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "metadata": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/AuditMetadata"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "TradingMode": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["mode"],
+          "properties": {"mode": {"enum": ["paper", "live", "disabled"]}}
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ServerConnection": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["name", "status", "connectedAt"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "status": {"enum": ["connected", "disconnected", "degraded"]},
+            "connectedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Instrument": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["symbol", "assetClass", "currency", "tickSize"],
+          "properties": {
+            "symbol": {"type": "string", "minLength": 1},
+            "assetClass": {"enum": ["equity", "option", "future", "forex", "crypto"]},
+            "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+            "tickSize": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Quote": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["instrumentId", "bid", "ask", "observedAt"],
+          "properties": {
+            "instrumentId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "bid": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+            "ask": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+            "observedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Signal": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["instrumentId", "direction", "strength", "generatedAt"],
+          "properties": {
+            "instrumentId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "direction": {"enum": ["buy", "sell", "flat"]},
+            "strength": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/Decimal"},
+            "generatedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Order": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["instrumentId", "side", "orderType", "quantity", "status", "clientOrderId"],
+          "properties": {
+            "instrumentId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "side": {"enum": ["buy", "sell"]},
+            "orderType": {"enum": ["market", "limit", "stop", "stop_limit"]},
+            "quantity": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+            "limitPrice": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+            "status": {"enum": ["pending", "accepted", "partially_filled", "filled", "cancelled", "rejected"]},
+            "clientOrderId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Execution": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["orderId", "quantity", "price", "executedAt", "source"],
+          "properties": {
+            "orderId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "quantity": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+            "price": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+            "executedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"},
+            "source": {"enum": ["platform_order", "manual_broker_exit", "reconciliation"]}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "Position": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["instrumentId", "quantity", "averagePrice", "state"],
+          "properties": {
+            "instrumentId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "quantity": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/Decimal"},
+            "averagePrice": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+            "state": {"enum": ["open", "closing", "closed"]}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "P&L": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["positionId", "realized", "unrealized", "currency", "calculatedAt"],
+          "properties": {
+            "positionId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+            "realized": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/Decimal"},
+            "unrealized": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/Decimal"},
+            "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+            "calculatedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "RiskState": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["status", "grossExposure", "observedAt"],
+          "properties": {
+            "status": {"enum": ["normal", "warning", "halted"]},
+            "grossExposure": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+            "observedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"},
+            "reason": {"type": "string"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "BrokerHealth": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["broker", "status", "observedAt"],
+          "properties": {
+            "broker": {"type": "string", "minLength": 1},
+            "status": {"enum": ["healthy", "degraded", "unavailable"]},
+            "observedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "MarketFeedHealth": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["feed", "status", "lastQuoteAt", "observedAt"],
+          "properties": {
+            "feed": {"type": "string", "minLength": 1},
+            "status": {"enum": ["healthy", "stale", "unavailable"]},
+            "lastQuoteAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"},
+            "observedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "ManualBrokerExit": {
+      "type": "object",
+      "required": ["brokerExecutionId", "positionId", "quantity", "price", "executedAt"],
+      "properties": {
+        "brokerExecutionId": {"type": "string", "minLength": 1},
+        "positionId": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UuidV7"},
+        "quantity": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+        "price": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/NonNegativeDecimal"},
+        "executedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+      },
+      "additionalProperties": false
+    },
+    "ReconciliationOutcome": {
+      "type": "object",
+      "required": ["kind", "resolution", "recordedAt"],
+      "properties": {
+        "kind": {"enum": ["matched", "missing_local", "missing_broker", "quantity_mismatch", "price_mismatch", "manual_broker_exit"]},
+        "resolution": {"enum": ["none", "local_adjusted", "broker_review_required", "accepted_manual_exit"]},
+        "localValue": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/Decimal"},
+        "brokerValue": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/Decimal"},
+        "manualExit": {"$ref": "#/$defs/ManualBrokerExit"},
+        "recordedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+      },
+      "additionalProperties": false
+    },
+    "ReconciliationState": {
+      "allOf": [
+        {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/VersionedEntity"},
+        {
+          "type": "object",
+          "required": ["broker", "status", "outcomes", "startedAt"],
+          "properties": {
+            "broker": {"type": "string", "minLength": 1},
+            "status": {"enum": ["pending", "matched", "differences_found", "review_required", "resolved"]},
+            "outcomes": {
+              "type": "array",
+              "items": {"$ref": "#/$defs/ReconciliationOutcome"}
+            },
+            "startedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"},
+            "completedAt": {"$ref": "https://pentagon5.dev/schemas/shared/common/1.0.0#/$defs/UtcTimestamp"}
+          }
+        }
+      ],
+      "unevaluatedProperties": false
+    }
+  }
+}

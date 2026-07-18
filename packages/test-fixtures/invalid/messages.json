@@ -1,0 +1,69 @@
+[
+  {
+    "case": "uuid-v4-is-not-uuid-v7",
+    "instance": {
+      "schemaVersion": "1.0.0",
+      "messageId": "550e8400-e29b-41d4-a716-446655440000",
+      "category": "query",
+      "occurredAt": "2026-07-18T12:10:01Z",
+      "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+      "payload": {"queryType": "list", "entityType": "Order"}
+    }
+  },
+  {
+    "case": "timestamp-is-not-utc-z",
+    "instance": {
+      "schemaVersion": "1.0.0",
+      "messageId": "018f22e2-7d00-7000-8000-000000000103",
+      "category": "query",
+      "occurredAt": "2026-07-18T14:10:01+02:00",
+      "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+      "payload": {"queryType": "list", "entityType": "Order"}
+    }
+  },
+  {
+    "case": "financial-value-is-json-number",
+    "instance": {
+      "schemaVersion": "1.0.0",
+      "messageId": "018f22e2-7d00-7000-8000-000000000101",
+      "category": "command",
+      "occurredAt": "2026-07-18T12:10:00Z",
+      "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+      "payload": {"commandType": "place_order", "clientOrderId": "018f22e2-7d00-7000-8000-000000000102", "instrumentId": "018f22e2-7d00-7000-8000-000000000013", "side": "buy", "orderType": "limit", "quantity": 10.0, "idempotencyKey": "client-order-20260718-001"}
+    }
+  },
+  {
+    "case": "order-command-lacks-idempotency-key",
+    "instance": {
+      "schemaVersion": "1.0.0",
+      "messageId": "018f22e2-7d00-7000-8000-000000000101",
+      "category": "command",
+      "occurredAt": "2026-07-18T12:10:00Z",
+      "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+      "payload": {"commandType": "cancel_order", "orderId": "018f22e2-7d00-7000-8000-000000000016"}
+    }
+  },
+  {
+    "case": "unknown-property-is-rejected",
+    "instance": {
+      "schemaVersion": "1.0.0",
+      "messageId": "018f22e2-7d00-7000-8000-000000000103",
+      "category": "query",
+      "occurredAt": "2026-07-18T12:10:01Z",
+      "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+      "payload": {"queryType": "list", "entityType": "Order"},
+      "unexpected": true
+    }
+  },
+  {
+    "case": "unsupported-schema-version",
+    "instance": {
+      "schemaVersion": "1.1.0",
+      "messageId": "018f22e2-7d00-7000-8000-000000000103",
+      "category": "query",
+      "occurredAt": "2026-07-18T12:10:01Z",
+      "metadata": {"correlationId": "018f22e2-7d00-7000-8000-000000000100"},
+      "payload": {"queryType": "list", "entityType": "Order"}
+    }
+  }
+]

@@ -6,18 +6,18 @@ Create the strategy layer that receives market data and produces broker orders.
 
 ## Tasks
 
-- [ ] Create strategy models
+- [x] Create strategy models
 
-- [ ] Create Strategy interface
+- [x] Create Strategy interface
 
-- [ ] Create MockStrategy
+- [x] Create MockStrategy
 
-- [ ] Connect strategy to market data and broker abstractions
+- [x] Connect strategy to market data and broker abstractions
 
-- [ ] Write unit tests
+- [x] Write unit tests
 
-- [ ] Pass pytest
+- [x] Pass pytest
 
-- [ ] Pass Ruff
+- [x] Pass Ruff
 
-- [ ] Pass mypy
+- [x] Pass mypy

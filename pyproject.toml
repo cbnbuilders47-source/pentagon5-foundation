@@ -64,3 +64,4 @@ mypy_path = ["backend", "services/authentication", "services/api-gateway"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
